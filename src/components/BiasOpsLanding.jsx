@@ -32,7 +32,7 @@ export default function BiasOpsLanding() {
         <header className="text-center opacity-0 animate-fadeIn scroll-mt-20" id="top">
           <h1 className="text-6xl md:text-7xl font-semibold tracking-tight leading-tight">BiasOps</h1>
           <p className="text-xl mt-6 text-gray-500 font-light">
-            Deploy Models You can Defend
+            Deploy Models you can Defend
           </p>
           <p className="text-xl mt-6 text-gray-500 font-light">
             BiasOps makes fairness a first class citizen in your MLOps pipeline.
@@ -103,10 +103,10 @@ export default function BiasOpsLanding() {
           <p className="mt-4 text-sm text-gray-400">Drop into your MLOps pipeline with one line of code.</p>
           <footer className="mt-16 py-8 text-center text-gray-400 text-sm">
   BiasOps.ai © 2025&nbsp;|&nbsp;
-  <a href="#" className="hover:underline text-gray-500" target="_blank" rel="noopener noreferrer">LinkedIn</a>&nbsp;|&nbsp;
+  <a href="https://www.linkedin.com/company/biasops" className="hover:underline text-gray-500" target="_blank" rel="noopener noreferrer">LinkedIn</a>&nbsp;|&nbsp;
   <a href="blogs.html" className="hover:underline text-gray-500">Blog</a>&nbsp;|&nbsp;
-  <a href="#" className="hover:underline text-gray-500" target="_blank" rel="noopener noreferrer">GitHub</a>&nbsp;|&nbsp;
-  <a href="#" className="hover:underline text-gray-500">Contact</a>
+  <a href="https://github.com/biasops" className="hover:underline text-gray-500" target="_blank" rel="noopener noreferrer">GitHub</a>&nbsp;|&nbsp;
+  <a href="mailto:Vineeth@biasops.ai" className="hover:underline text-gray-500">Contact</a>
 </footer>
         </div>
       </div>
