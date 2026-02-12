@@ -5,73 +5,111 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>BiasOps.ai – Blog</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f6f8;
-      color: #222;
+      font-family: -apple-system, 'Segoe UI', sans-serif;
+      background-color: #0a0e1a;
+      color: #e5e7eb;
+      line-height: 1.6;
     }
-    header {
-      background-color: #101820;
-      color: white;
-      padding: 40px 20px;
-      text-align: center;
+    a { color: #22d3ee; text-decoration: none; }
+    a:hover { color: #67e8f9; }
+
+    /* Nav */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      background: rgba(10,14,26,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding: 16px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      max-width: 100%;
     }
-    header h1 {
-      font-size: 2.2em;
-      margin: 0;
+    .nav-logo { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+    .nav-logo span:first-child { color: #fff; }
+    .nav-logo span:last-child { color: #22d3ee; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: #9ca3af; font-size: 0.875rem; }
+    .nav-links a:hover { color: #fff; }
+    .nav-cta {
+      background: #22d3ee; color: #0a0e1a; font-size: 0.875rem;
+      font-weight: 600; padding: 8px 20px; border-radius: 9999px; border: none; cursor: pointer;
     }
-    section {
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 0 20px;
+    .nav-cta:hover { background: #67e8f9; color: #0a0e1a; }
+
+    /* Content */
+    .content {
+      max-width: 800px; margin: 0 auto;
+      padding: 120px 24px 60px;
     }
-    h2 {
-      color: #0073e6;
-      font-size: 1.6em;
-      margin-bottom: 10px;
+    h1 {
+      font-size: 2.5rem; font-weight: 700;
+      letter-spacing: -0.02em; color: #fff; margin-bottom: 8px;
     }
-    ul {
-      line-height: 1.8;
-      padding-left: 20px;
+    h1 span { color: #22d3ee; }
+    .subtitle { color: #9ca3af; font-size: 1.1rem; margin-bottom: 48px; }
+    h2 { color: #22d3ee; font-size: 1.3rem; margin-bottom: 16px; font-weight: 600; }
+
+    .article-list { list-style: none; padding: 0; }
+    .article-list li {
+      background: #0f1424; border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px; padding: 20px 24px; margin-bottom: 12px;
+      transition: border-color 0.2s;
     }
+    .article-list li:hover { border-color: rgba(34,211,238,0.2); }
+    .article-list li a { color: #fff; font-weight: 500; font-size: 1.05rem; }
+    .article-list li a:hover { color: #22d3ee; }
+
+    /* Footer */
     footer {
-      background-color: #101820;
-      color: white;
-      text-align: center;
-      padding: 20px;
-      margin-top: 40px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      background: #080b15; text-align: center;
+      padding: 32px 24px; color: #6b7280; font-size: 0.875rem;
     }
-    footer a {
-      color: #4ba3fa;
-      text-decoration: none;
-      margin: 0 10px;
+    footer a { color: #9ca3af; margin: 0 12px; }
+    footer a:hover { color: #fff; }
+    .footer-email { margin-top: 16px; }
+    .footer-email a { color: #22d3ee; }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      h1 { font-size: 1.8rem; }
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>BiasOps Blog</h1>
-  </header>
+  <nav>
+    <a href="/" class="nav-logo"><span>Bias</span><span>Ops</span></a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="blogs.html">Blog</a>
+      <a href="mailto:Vineeth@biasops.ai">Contact</a>
+      <a href="/#waitlist" class="nav-cta">Join Waitlist</a>
+    </div>
+  </nav>
 
-  <section>
-    <h2>📖 Articles by Vineeth</h2>
-    <ul>
-      <li><a href="https://medium.com/generative-ai/bias-taxonomy-a-field-guide-to-the-hidden-biases-in-ai-systems-every-developer-should-know-3e04f3ace76a" target="_blank">The Invisible Code We Write – A Field Guide to ML Bias</a></li>
-      <li><a href="https://medium.com/@sksvineeth/architecting-against-bias-systems-signals-fixes" target="_blank">Architecting Against Bias: Systems, Signals, and Fixes</a></li>
-      <li><a href="https://medium.com/@sksvineeth/the-cocoon-of-you-introduction-to-you-bias-d5b88a1b0462" target="_blank">The Cocoon of YOU Bias</a></li>
+  <div class="content">
+    <h1>Bias<span>Ops</span> Blog</h1>
+    <p class="subtitle">Perspectives on AI fairness, governance, and responsible ML infrastructure.</p>
+
+    <h2>Articles by Vineeth</h2>
+    <ul class="article-list">
+      <li><a href="https://medium.com/generative-ai/bias-taxonomy-a-field-guide-to-the-hidden-biases-in-ai-systems-every-developer-should-know-3e04f3ace76a" target="_blank" rel="noopener noreferrer">The Invisible Code We Write &mdash; A Field Guide to ML Bias</a></li>
+      <li><a href="https://medium.com/@sksvineeth/architecting-against-bias-systems-signals-fixes" target="_blank" rel="noopener noreferrer">Architecting Against Bias: Systems, Signals, and Fixes</a></li>
+      <li><a href="https://medium.com/@sksvineeth/the-cocoon-of-you-introduction-to-you-bias-d5b88a1b0462" target="_blank" rel="noopener noreferrer">The Cocoon of YOU Bias</a></li>
     </ul>
-  </section>
+  </div>
 
   <footer>
-    BiasOps.ai © 2025 |
-    <a href="index.html">Home</a> |
+    &copy; 2026 BiasOps.ai. All rights reserved. | MIT Licensed
+    <br />
+    <a href="/">Home</a> |
     <a href="blogs.html">Blog</a> |
-    <a href="mailto:Vineeth@biasops.ai">Contact</a>
-    <div style="margin-top:20px;">
-      <a href="mailto:Vineeth@biasops.ai" style="color:#4ba3fa;">Email us at Vineeth@biasops.ai</a>
+    <a href="https://www.linkedin.com/company/biasops" target="_blank" rel="noopener noreferrer">LinkedIn</a> |
+    <a href="https://github.com/sksvineeth/biasOps-site" target="_blank" rel="noopener noreferrer">GitHub</a>
+    <div class="footer-email">
+      <a href="mailto:Vineeth@biasops.ai">Vineeth@biasops.ai</a>
     </div>
   </footer>
 

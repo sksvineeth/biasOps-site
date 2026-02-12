@@ -16,6 +16,6 @@ It turns fairness into infrastructure—detecting, mitigating, and logging bias 
 
 ---
 
-## 📦 Project Structure
+---
 
-
+© 2026 BiasOps.ai — MIT Licensed
