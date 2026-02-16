@@ -1,4 +1,42 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    background: #08090C;
+    color: #ECEFF4;
+  }
+  ::selection {
+    background: rgba(196, 204, 216, 0.25);
+    color: #E0E5EC;
+  }
+}
+
+@layer utilities {
+  .text-shimmer {
+    background: linear-gradient(
+      90deg,
+      #E0E5EC 0%,
+      #C4CCD8 25%,
+      #FFFFFF 50%,
+      #C4CCD8 75%,
+      #E0E5EC 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 4s linear infinite;
+  }
+}
