@@ -92,20 +92,15 @@ function BiasOpsLogo({ size = 40 }) {
           </feMerge>
         </filter>
       </defs>
-      {/* Left face */}
       <path d="M6 16L24 6L24 28L6 38Z" fill={`url(#${id}-light)`} opacity="0.35" />
       <path d="M6 16L24 6L24 28L6 38Z" stroke={`url(#${id}-silver)`} strokeWidth="1" fill="none" opacity="0.6" />
-      {/* Right face */}
       <path d="M42 16L24 6L24 28L42 38Z" fill={`url(#${id}-dark)`} opacity="0.25" />
       <path d="M42 16L24 6L24 28L42 38Z" stroke={`url(#${id}-silver)`} strokeWidth="1" fill="none" opacity="0.4" />
-      {/* Bottom face */}
       <path d="M6 38L24 28L42 38L24 48Z" fill={`url(#${id}-bottom)`} opacity="0.3" />
       <path d="M6 38L24 28L42 38L24 48Z" stroke={`url(#${id}-silver)`} strokeWidth="1" fill="none" opacity="0.5" />
-      {/* Edge highlights */}
       <line x1="24" y1="6" x2="24" y2="28" stroke="#E8ECF1" strokeWidth="0.5" opacity="0.4" />
       <line x1="6" y1="38" x2="24" y2="48" stroke="#8A95A8" strokeWidth="0.5" opacity="0.3" />
       <line x1="42" y1="38" x2="24" y2="48" stroke="#6B7A90" strokeWidth="0.5" opacity="0.3" />
-      {/* Checkmark with glow */}
       <path d="M16 26L22 32L34 18" stroke={`url(#${id}-check)`} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" filter={`url(#${id}-glow)`} />
     </svg>
   );
@@ -145,19 +140,25 @@ function YamlBlock() {
   ];
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-border bg-[#0D1017] shadow-2xl max-w-2xl mx-auto text-left">
-      <div className="flex items-center gap-2 px-4 py-3 bg-surface-raised border-b border-border">
-        <span className="w-3 h-3 rounded-full bg-[#FF5F57]" />
-        <span className="w-3 h-3 rounded-full bg-[#F5A623]" />
-        <span className="w-3 h-3 rounded-full bg-[#28C840]" />
-        <span className="ml-3 text-xs text-text-muted font-mono">ecoa_policy.yaml</span>
+    <div className="rounded-2xl overflow-hidden border border-border bg-[#0A0C10] shadow-2xl max-w-2xl mx-auto text-left">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-border">
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-[#FF5F57]" />
+          <span className="w-3 h-3 rounded-full bg-[#F5A623]" />
+          <span className="w-3 h-3 rounded-full bg-[#28C840]" />
+        </div>
+        <span className="text-[11px] text-text-dim font-mono">ecoa_disparate_impact.yaml</span>
       </div>
-      <pre className="p-5 text-sm font-mono leading-relaxed overflow-x-auto">
+      <pre className="px-6 py-6 text-sm font-mono leading-relaxed overflow-x-auto">
         {lines.map((l, i) => (
           <div key={i}>
             <span className="text-text-dim">{"  ".repeat(l.indent)}</span>
             <span className="text-text-muted">{l.key}</span>
-            <span className="text-silver-light">{l.val}</span>
+            {l.val && l.val.includes('"') ? (
+              <span className="text-silver">{l.val}</span>
+            ) : (
+              <span className="text-silver-light">{l.val}</span>
+            )}
           </div>
         ))}
       </pre>
@@ -190,7 +191,7 @@ function DashboardPreview() {
   return (
     <div className="relative max-w-5xl mx-auto">
       <div
-        className="rounded-[20px] overflow-hidden border border-border"
+        className="rounded-[20px] overflow-hidden border border-border-light"
         style={{ boxShadow: "0 32px 100px rgba(0,0,0,0.5)" }}
       >
         {/* Browser chrome */}
@@ -225,7 +226,7 @@ function DashboardPreview() {
               ].map((s) => (
                 <div key={s.label} className="rounded-xl bg-surface border border-border p-3">
                   <p className="text-[10px] text-text-muted uppercase tracking-wider">{s.label}</p>
-                  <p className="text-lg font-bold text-silver-light font-mono mt-1">{s.value}</p>
+                  <p className="text-lg font-extrabold text-silver-light font-mono mt-1">{s.value}</p>
                 </div>
               ))}
             </div>
@@ -281,7 +282,7 @@ function DashboardPreview() {
 /* ------------------------------------------------------------------ */
 function FaqItem({ question, answer, open, onClick }) {
   return (
-    <div className="border-b border-border">
+    <div className="border-b border-border-light">
       <button onClick={onClick} className="w-full flex items-center justify-between py-5 text-left">
         <span className="text-lg font-medium text-silver-light pr-4">{question}</span>
         <ChevronDown
@@ -312,14 +313,12 @@ export default function BiasOpsLanding() {
   return (
     <div className="min-h-screen bg-bg text-silver-light scroll-smooth relative overflow-x-hidden">
       {/* ====== Background Effects ====== */}
-      {/* Noise overlay */}
       <div
         className="fixed inset-0 z-0 pointer-events-none opacity-[0.025]"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
         }}
       />
-      {/* Grid pattern */}
       <div
         className="fixed inset-0 z-0 pointer-events-none animate-grid-pulse"
         style={{
@@ -328,7 +327,6 @@ export default function BiasOpsLanding() {
           backgroundSize: "64px 64px",
         }}
       />
-      {/* Ambient radial glows */}
       <div
         className="fixed top-[-20%] left-[-10%] w-[60%] h-[60%] z-0 pointer-events-none rounded-full opacity-[0.07]"
         style={{ background: "radial-gradient(circle, #C4CCD8 0%, transparent 70%)" }}
@@ -342,7 +340,7 @@ export default function BiasOpsLanding() {
       <nav className="fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-bg/80 border-b border-border/50">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-6 h-16">
           <a href="#top" className="flex items-center gap-2.5">
-            <BiasOpsLogo size={30} />
+            <BiasOpsLogo size={36} />
             <span className="text-lg font-bold tracking-tight text-silver-light">BiasOps</span>
           </a>
 
@@ -366,7 +364,6 @@ export default function BiasOpsLanding() {
             </a>
           </div>
 
-          {/* Mobile toggle */}
           <div className="flex md:hidden items-center gap-3">
             <a href="#cta" className="bg-silver-light text-bg text-xs font-semibold px-4 py-2 rounded-full">
               Early Access
@@ -395,13 +392,13 @@ export default function BiasOpsLanding() {
         <Reveal delay={0}>
           <div className="flex justify-center mb-8">
             <div className="animate-float">
-              <BiasOpsLogo size={80} />
+              <BiasOpsLogo size={96} />
             </div>
           </div>
         </Reveal>
 
         <Reveal delay={100}>
-          <span className="inline-flex items-center gap-2 bg-surface border border-border rounded-full px-4 py-1.5 text-sm text-text-secondary mb-8">
+          <span className="inline-flex items-center gap-2 bg-surface border border-border-light rounded-full px-4 py-1.5 text-sm text-text-secondary mb-8">
             NEW — Fair Lending compliance pack &middot; 5 federal regulations
           </span>
         </Reveal>
@@ -409,9 +406,10 @@ export default function BiasOpsLanding() {
         <Reveal delay={200}>
           <h1
             className="text-5xl md:text-[72px] font-extrabold leading-[1.05] tracking-[-3.5px]"
+            style={{ color: "#ECEFF4" }}
           >
-            Deploy Models{" "}
-            <span className="text-shimmer">you can Defend</span>
+            Deploy Models you can{" "}
+            <span className="text-shimmer">Defend</span>
           </h1>
         </Reveal>
 
@@ -458,7 +456,7 @@ export default function BiasOpsLanding() {
           ].map((s, i) => (
             <Reveal key={i} delay={400 + i * 100} fromY={16}>
               <div>
-                <p className="text-3xl font-bold text-silver-light font-mono">{s.value}</p>
+                <p className="text-3xl font-extrabold text-silver-light font-mono">{s.value}</p>
                 <p className="text-sm text-text-muted mt-1">{s.label}</p>
               </div>
             </Reveal>
@@ -478,7 +476,7 @@ export default function BiasOpsLanding() {
         <div className="max-w-6xl mx-auto">
           <Reveal>
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">How It Works</h2>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-silver-light">How It Works</h2>
               <p className="mt-4 text-text-muted text-lg">Four steps. Upload to audit-ready in minutes.</p>
             </div>
           </Reveal>
@@ -511,10 +509,10 @@ export default function BiasOpsLanding() {
               },
             ].map((card, i) => (
               <Reveal key={i} delay={i * 150}>
-                <div className="rounded-2xl border border-border bg-surface p-7 h-full relative overflow-hidden">
-                  <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-silver/30 to-transparent" />
-                  <span className="text-sm font-mono text-text-dim">{card.step}</span>
-                  <div className="w-10 h-10 rounded-lg bg-[rgba(196,204,216,0.08)] border border-border flex items-center justify-center mt-3 mb-4">
+                <div className="rounded-2xl border border-border-light hover:border-[#3A3F52] transition-colors bg-surface p-7 h-full relative overflow-hidden group">
+                  <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: "linear-gradient(90deg, transparent, rgba(196,204,216,0.12), transparent)" }} />
+                  <span className="text-[36px] font-mono font-extrabold leading-none" style={{ color: "rgba(196,204,216,0.15)" }}>{card.step}</span>
+                  <div className="w-10 h-10 rounded-lg bg-[rgba(196,204,216,0.08)] border border-border-light flex items-center justify-center mt-3 mb-4">
                     <card.icon className="w-5 h-5 text-silver" />
                   </div>
                   <h3 className="text-lg font-semibold text-silver-light">{card.title}</h3>
@@ -531,7 +529,7 @@ export default function BiasOpsLanding() {
         <div className="max-w-6xl mx-auto">
           <Reveal>
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Why BiasOps</h2>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-silver-light">Why BiasOps</h2>
             </div>
           </Reveal>
 
@@ -551,8 +549,8 @@ export default function BiasOpsLanding() {
               },
             ].map((card, i) => (
               <Reveal key={i} delay={i * 150}>
-                <div className="rounded-2xl border border-border bg-surface p-8 h-full relative overflow-hidden">
-                  <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-silver/30 to-transparent" />
+                <div className="rounded-2xl border border-border-light hover:border-[#3A3F52] transition-colors bg-surface p-8 h-full relative overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: "linear-gradient(90deg, transparent, rgba(196,204,216,0.12), transparent)" }} />
                   <h3 className="text-xl font-semibold text-silver-light mb-4">{card.title}</h3>
                   <p className="text-text-muted leading-relaxed">{card.desc}</p>
                 </div>
@@ -567,7 +565,7 @@ export default function BiasOpsLanding() {
         <div className="max-w-5xl mx-auto">
           <Reveal>
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Regulatory Frameworks</h2>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-silver-light">Regulatory Frameworks</h2>
               <p className="mt-4 text-text-muted text-lg">Policy packs mapped to real federal and international regulations.</p>
             </div>
           </Reveal>
@@ -586,7 +584,7 @@ export default function BiasOpsLanding() {
               ].map((reg) => (
                 <span
                   key={reg}
-                  className="border border-silver-dark/50 rounded-full px-5 py-2.5 text-sm text-text-secondary hover:border-silver/50 hover:text-silver-light transition"
+                  className="border border-border-light bg-surface rounded-full px-5 py-2.5 text-sm text-silver hover:border-[rgba(196,204,216,0.3)] hover:text-silver-light transition cursor-default"
                 >
                   {reg}
                 </span>
@@ -601,7 +599,7 @@ export default function BiasOpsLanding() {
         <div className="max-w-6xl mx-auto">
           <Reveal>
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Policies Live on GitHub</h2>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-silver-light">Policies Live on GitHub</h2>
               <p className="mt-4 text-text-muted text-lg max-w-2xl mx-auto">
                 Every threshold is traceable to published federal regulation. Apache 2.0 licensed. Inspect, fork, contribute.
               </p>
@@ -632,7 +630,7 @@ export default function BiasOpsLanding() {
         <div className="max-w-5xl mx-auto">
           <Reveal>
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Built on Experience</h2>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-silver-light">Built on Experience</h2>
             </div>
           </Reveal>
 
@@ -644,10 +642,10 @@ export default function BiasOpsLanding() {
               { value: "Apache 2.0", desc: "Fully open source. Inspect, fork, contribute." },
             ].map((item, i) => (
               <Reveal key={i} delay={i * 100}>
-                <div className="rounded-2xl border border-border bg-surface p-6 text-center relative overflow-hidden">
-                  <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-silver/30 to-transparent" />
-                  <p className="text-2xl font-bold text-silver-light font-mono">{item.value}</p>
-                  <p className="text-sm text-text-muted mt-2 leading-relaxed">{item.desc}</p>
+                <div className="rounded-2xl border border-border-light hover:border-[#3A3F52] transition-colors bg-surface p-6 text-center relative overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: "linear-gradient(90deg, transparent, rgba(196,204,216,0.12), transparent)" }} />
+                  <p className="text-[28px] font-extrabold text-silver-light font-mono leading-tight">{item.value}</p>
+                  <p className="text-[13px] text-text-muted mt-2 leading-relaxed">{item.desc}</p>
                 </div>
               </Reveal>
             ))}
@@ -661,7 +659,7 @@ export default function BiasOpsLanding() {
           <div className="flex justify-center mb-6">
             <BiasOpsLogo size={48} />
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-silver-light">
             Ready to defend your models?
           </h2>
           <p className="mt-4 text-text-muted text-lg max-w-xl mx-auto">

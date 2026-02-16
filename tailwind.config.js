@@ -33,7 +33,7 @@ module.exports = {
         },
         float: {
           '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-12px)' },
+          '50%': { transform: 'translateY(-8px)' },
         },
         gridPulse: {
           '0%, 100%': { opacity: '0.035' },
