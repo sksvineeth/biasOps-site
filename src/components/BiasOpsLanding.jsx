@@ -302,6 +302,7 @@ function FaqItem({ question, answer, open, onClick }) {
 export default function BiasOpsLanding() {
   const [mobileNav, setMobileNav] = useState(false);
   const [faqOpen, setFaqOpen] = useState(null);
+  const appUrl = process.env.REACT_APP_APP_URL || "http://localhost:3000";
 
   const navLinks = [
     { label: "Product", href: "#how-it-works" },
@@ -353,11 +354,11 @@ export default function BiasOpsLanding() {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <a href="#cta" className="text-sm text-text-secondary hover:text-silver-light transition">
+            <a href={`${appUrl}/sign-in`} className="text-sm text-text-secondary hover:text-silver-light transition">
               Sign in
             </a>
             <a
-              href="#cta"
+              href={`${appUrl}/sign-in`}
               className="bg-silver-light text-bg text-sm font-semibold px-5 py-2 rounded-full hover:bg-silver transition"
             >
               Request Early Access
@@ -365,7 +366,7 @@ export default function BiasOpsLanding() {
           </div>
 
           <div className="flex md:hidden items-center gap-3">
-            <a href="#cta" className="bg-silver-light text-bg text-xs font-semibold px-4 py-2 rounded-full">
+            <a href={`${appUrl}/sign-in`} className="bg-silver-light text-bg text-xs font-semibold px-4 py-2 rounded-full">
               Early Access
             </a>
             <button onClick={() => setMobileNav(!mobileNav)} className="text-text-muted" aria-label="Toggle menu">
@@ -422,7 +423,7 @@ export default function BiasOpsLanding() {
         <Reveal delay={400}>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
-              href="#cta"
+              href={`${appUrl}/sign-in`}
               className="bg-silver-light text-bg font-semibold px-8 py-3.5 rounded-full hover:bg-silver transition inline-flex items-center gap-2"
             >
               Request Early Access <ArrowRight className="w-4 h-4" />
@@ -667,7 +668,7 @@ export default function BiasOpsLanding() {
           </p>
           <div className="mt-8">
             <a
-              href="mailto:Vineeth@biasops.ai"
+              href={`${appUrl}/sign-in`}
               className="bg-silver-light text-bg font-semibold px-10 py-4 rounded-full hover:bg-silver transition inline-flex items-center gap-2 text-lg"
             >
               Request Early Access <ArrowRight className="w-5 h-5" />
