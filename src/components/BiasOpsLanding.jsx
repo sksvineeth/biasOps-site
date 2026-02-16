@@ -36,7 +36,7 @@ function useReveal(threshold = 0.15) {
   return [ref, visible];
 }
 
-function Reveal({ children, delay = 0, className = "" }) {
+function Reveal({ children, delay = 0, className = "", fromY = 24 }) {
   const [ref, visible] = useReveal();
   return (
     <div
@@ -46,7 +46,7 @@ function Reveal({ children, delay = 0, className = "" }) {
         transitionDelay: `${delay}ms`,
         transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(24px)",
+        transform: visible ? "translateY(0)" : `translateY(${fromY}px)`,
       }}
     >
       {children}
@@ -55,55 +55,72 @@ function Reveal({ children, delay = 0, className = "" }) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Isometric Cube Logo                                                */
+/*  BiasOpsLogo — full version with glow                               */
 /* ------------------------------------------------------------------ */
-function CubeLogo({ size = 30, animate = false, className = "" }) {
+let logoCounter = 0;
+function BiasOpsLogo({ size = 40 }) {
+  const [id] = useState(() => `logo-${++logoCounter}`);
   return (
-    <svg
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      width={size}
-      height={size}
-      className={`${animate ? "animate-float" : ""} ${className}`}
-    >
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id="lt" x1="24" y1="4" x2="24" y2="20" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#3D4756" stopOpacity="0.3" />
-          <stop offset="1" stopColor="#2A3240" stopOpacity="0.3" />
+        <linearGradient id={`${id}-light`} x1="6" y1="16" x2="24" y2="38">
+          <stop offset="0%" stopColor="#D1D8E3" />
+          <stop offset="100%" stopColor="#A0ABBE" />
         </linearGradient>
-        <linearGradient id="ll" x1="4" y1="20" x2="24" y2="44" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#D1D8E3" stopOpacity="0.35" />
-          <stop offset="1" stopColor="#A0ABBE" stopOpacity="0.35" />
+        <linearGradient id={`${id}-dark`} x1="42" y1="16" x2="24" y2="38">
+          <stop offset="0%" stopColor="#6B7A90" />
+          <stop offset="100%" stopColor="#4A5568" />
         </linearGradient>
-        <linearGradient id="lr" x1="44" y1="20" x2="24" y2="44" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#6B7A90" stopOpacity="0.25" />
-          <stop offset="1" stopColor="#4A5568" stopOpacity="0.25" />
+        <linearGradient id={`${id}-bottom`} x1="6" y1="38" x2="42" y2="48">
+          <stop offset="0%" stopColor="#3D4756" />
+          <stop offset="100%" stopColor="#2A3240" />
         </linearGradient>
-        <linearGradient id="lc" x1="16" y1="22" x2="32" y2="34" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#FFFFFF" />
-          <stop offset="1" stopColor="#E0E5EC" />
+        <linearGradient id={`${id}-silver`} x1="0" y1="0" x2="48" y2="48">
+          <stop offset="0%" stopColor="#E8ECF1" />
+          <stop offset="40%" stopColor="#C4CCD8" />
+          <stop offset="100%" stopColor="#8A95A8" />
         </linearGradient>
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur" />
+        <linearGradient id={`${id}-check`} x1="16" y1="18" x2="34" y2="32">
+          <stop offset="0%" stopColor="#FFFFFF" />
+          <stop offset="100%" stopColor="#E0E5EC" />
+        </linearGradient>
+        <filter id={`${id}-glow`}>
+          <feGaussianBlur stdDeviation="1.5" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
       </defs>
-      <polygon points="24,4 44,16 24,28 4,16" fill="url(#lt)" stroke="#C4CCD8" strokeWidth="0.5" strokeOpacity="0.2" />
-      <polygon points="4,16 24,28 24,44 4,32" fill="url(#ll)" stroke="#C4CCD8" strokeWidth="0.5" strokeOpacity="0.2" />
-      <polygon points="44,16 24,28 24,44 44,32" fill="url(#lr)" stroke="#C4CCD8" strokeWidth="0.5" strokeOpacity="0.2" />
-      <polyline
-        points="16,26 22,32 33,20"
-        fill="none"
-        stroke="url(#lc)"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        filter="url(#glow)"
-      />
+      {/* Left face */}
+      <path d="M6 16L24 6L24 28L6 38Z" fill={`url(#${id}-light)`} opacity="0.35" />
+      <path d="M6 16L24 6L24 28L6 38Z" stroke={`url(#${id}-silver)`} strokeWidth="1" fill="none" opacity="0.6" />
+      {/* Right face */}
+      <path d="M42 16L24 6L24 28L42 38Z" fill={`url(#${id}-dark)`} opacity="0.25" />
+      <path d="M42 16L24 6L24 28L42 38Z" stroke={`url(#${id}-silver)`} strokeWidth="1" fill="none" opacity="0.4" />
+      {/* Bottom face */}
+      <path d="M6 38L24 28L42 38L24 48Z" fill={`url(#${id}-bottom)`} opacity="0.3" />
+      <path d="M6 38L24 28L42 38L24 48Z" stroke={`url(#${id}-silver)`} strokeWidth="1" fill="none" opacity="0.5" />
+      {/* Edge highlights */}
+      <line x1="24" y1="6" x2="24" y2="28" stroke="#E8ECF1" strokeWidth="0.5" opacity="0.4" />
+      <line x1="6" y1="38" x2="24" y2="48" stroke="#8A95A8" strokeWidth="0.5" opacity="0.3" />
+      <line x1="42" y1="38" x2="24" y2="48" stroke="#6B7A90" strokeWidth="0.5" opacity="0.3" />
+      {/* Checkmark with glow */}
+      <path d="M16 26L22 32L34 18" stroke={`url(#${id}-check)`} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" filter={`url(#${id}-glow)`} />
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  BiasOpsIcon — compact, no glow                                     */
+/* ------------------------------------------------------------------ */
+function BiasOpsIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <path d="M6 16L24 6L24 28L6 38Z" fill="#C4CCD8" opacity="0.35" />
+      <path d="M42 16L24 6L24 28L42 38Z" fill="#6B7A90" opacity="0.25" />
+      <path d="M6 38L24 28L42 38L24 48Z" fill="#3D4756" opacity="0.3" />
+      <path d="M16 26L22 32L34 18" stroke="#E8ECF1" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
     </svg>
   );
 }
@@ -190,7 +207,7 @@ function DashboardPreview() {
         <div className="flex bg-bg">
           {/* Mini sidebar */}
           <div className="w-12 border-r border-border flex flex-col items-center py-4 gap-3 shrink-0">
-            <CubeLogo size={20} />
+            <BiasOpsIcon size={22} />
             {[...Array(5)].map((_, i) => (
               <div key={i} className={`w-6 h-6 rounded-md ${i === 0 ? "bg-[rgba(196,204,216,0.12)] border border-[rgba(196,204,216,0.25)]" : ""}`} />
             ))}
@@ -325,7 +342,7 @@ export default function BiasOpsLanding() {
       <nav className="fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-bg/80 border-b border-border/50">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-6 h-16">
           <a href="#top" className="flex items-center gap-2.5">
-            <CubeLogo size={30} />
+            <BiasOpsLogo size={30} />
             <span className="text-lg font-bold tracking-tight text-silver-light">BiasOps</span>
           </a>
 
@@ -375,13 +392,21 @@ export default function BiasOpsLanding() {
 
       {/* ====== HERO ====== */}
       <section id="top" className="relative z-10 scroll-mt-20 pt-32 pb-20 px-6 max-w-5xl mx-auto text-center">
-        <Reveal>
+        <Reveal delay={0}>
+          <div className="flex justify-center mb-8">
+            <div className="animate-float">
+              <BiasOpsLogo size={80} />
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal delay={100}>
           <span className="inline-flex items-center gap-2 bg-surface border border-border rounded-full px-4 py-1.5 text-sm text-text-secondary mb-8">
             NEW — Fair Lending compliance pack &middot; 5 federal regulations
           </span>
         </Reveal>
 
-        <Reveal delay={100}>
+        <Reveal delay={200}>
           <h1
             className="text-5xl md:text-[72px] font-extrabold leading-[1.05] tracking-[-3.5px]"
           >
@@ -390,13 +415,13 @@ export default function BiasOpsLanding() {
           </h1>
         </Reveal>
 
-        <Reveal delay={200}>
+        <Reveal delay={300}>
           <p className="mt-6 text-[17px] text-text-muted max-w-[560px] mx-auto leading-relaxed">
             BiasOps is real-time fairness infrastructure for ML. Detect, mitigate, and audit bias directly in your pipeline — with config-as-code policies and an immutable audit trail.
           </p>
         </Reveal>
 
-        <Reveal delay={300}>
+        <Reveal delay={400}>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
               href="#cta"
@@ -415,7 +440,7 @@ export default function BiasOpsLanding() {
           </div>
         </Reveal>
 
-        <Reveal delay={400}>
+        <Reveal delay={500}>
           <div className="mt-6 text-sm text-text-dim">
             Built for ML engineers, compliance officers, and audit teams at banks, fintechs, mortgage lenders, and insurers.
           </div>
@@ -431,7 +456,7 @@ export default function BiasOpsLanding() {
             { value: "5", label: "Regulatory frameworks" },
             { value: "< 4 min", label: "Upload to audit" },
           ].map((s, i) => (
-            <Reveal key={i} delay={400 + i * 100}>
+            <Reveal key={i} delay={400 + i * 100} fromY={16}>
               <div>
                 <p className="text-3xl font-bold text-silver-light font-mono">{s.value}</p>
                 <p className="text-sm text-text-muted mt-1">{s.label}</p>
@@ -443,7 +468,7 @@ export default function BiasOpsLanding() {
 
       {/* ====== DASHBOARD PREVIEW ====== */}
       <section className="relative z-10 py-24 px-6">
-        <Reveal delay={700}>
+        <Reveal delay={700} fromY={32}>
           <DashboardPreview />
         </Reveal>
       </section>
@@ -633,6 +658,9 @@ export default function BiasOpsLanding() {
       {/* ====== CTA ====== */}
       <section id="cta" className="relative z-10 scroll-mt-20 py-28 px-6 text-center">
         <Reveal>
+          <div className="flex justify-center mb-6">
+            <BiasOpsLogo size={48} />
+          </div>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
             Ready to defend your models?
           </h2>
@@ -656,7 +684,7 @@ export default function BiasOpsLanding() {
           <div className="grid md:grid-cols-4 gap-10">
             <div>
               <a href="#top" className="flex items-center gap-2">
-                <CubeLogo size={24} />
+                <BiasOpsIcon size={18} />
                 <span className="text-lg font-bold tracking-tight text-silver-light">BiasOps</span>
               </a>
             </div>
