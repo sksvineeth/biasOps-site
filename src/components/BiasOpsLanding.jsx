@@ -6,10 +6,6 @@ import {
   ChevronDown,
   Mail,
   Linkedin,
-  Upload,
-  Settings,
-  Play,
-  ShieldCheck,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -296,6 +292,303 @@ function FaqItem({ question, answer, open, onClick }) {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  Inline SVG Icons (22px stroke, no library)                         */
+/* ------------------------------------------------------------------ */
+const FeatureIcons = {
+  radar: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" opacity="0.4" />
+      <circle cx="12" cy="12" r="6" opacity="0.6" />
+      <circle cx="12" cy="12" r="2" />
+      <path d="M12 2C12 2 12 12 12 12" />
+      <path d="M12 12L18.5 5.5" />
+    </svg>
+  ),
+  branch: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="6" cy="6" r="2" />
+      <circle cx="18" cy="9" r="2" />
+      <circle cx="18" cy="18" r="2" />
+      <path d="M6 8v8c0 2 2 3 4 3h4" />
+      <path d="M6 8c0 2 2 4 4 4h4" />
+    </svg>
+  ),
+  chart: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M9 3v18" />
+      <path d="M13 13h4" />
+      <path d="M13 17h4" />
+    </svg>
+  ),
+  code: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-1" />
+      <path d="M9 7l-2 3 2 3" />
+      <path d="M15 7l2 3-2 3" />
+      <path d="M13 7l-2 6" />
+    </svg>
+  ),
+  shield: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" />
+      <path d="M9 12l2 2 4-4" />
+    </svg>
+  ),
+  plug: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 2v4" />
+      <path d="M17 2v4" />
+      <path d="M5 6h14a1 1 0 0 1 1 1v3a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6V7a1 1 0 0 1 1-1z" />
+      <path d="M12 16v4" />
+      <path d="M8 20h8" />
+    </svg>
+  ),
+};
+
+const carouselFeatures = [
+  { num: "01", title: "Adaptive Bias Detection", desc: "Scan predictions for group-level disparity in real time. Measure uncertainty to determine risk — not just accuracy.", icon: "radar" },
+  { num: "02", title: "Smart Routing Engine", desc: "Automatically trigger critique and repair agents when bias and uncertainty exceed your declared thresholds.", icon: "branch" },
+  { num: "03", title: "Governance Dashboard", desc: "Visualize bias metrics, model confidence, and human feedback loops for every prediction — across every model.", icon: "chart" },
+  { num: "04", title: "Config-as-Code Policies", desc: "Define fairness thresholds in declarative YAML. Version-controlled, reviewable, enforceable — just like infrastructure.", icon: "code" },
+  { num: "05", title: "Immutable Audit Trail", desc: "Every mitigation event logged with timestamps, explanations, and policy references. Ready for SOC 2, EU AI Act, and LL144.", icon: "shield" },
+  { num: "06", title: "Plug-and-Play Integration", desc: "Drop into any MLOps pipeline via API or CLI. Works with your existing stack — no rip-and-replace required.", icon: "plug" },
+];
+
+/* ------------------------------------------------------------------ */
+/*  Feature Card                                                       */
+/* ------------------------------------------------------------------ */
+function FeatureCard({ num, title, desc, icon }) {
+  const cardRef = useRef(null);
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [hovered, setHovered] = useState(false);
+
+  const handleMouseMove = (e) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    setMouse({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  return (
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        flex: "0 0 320px",
+        scrollSnapAlign: "center",
+        padding: "1px",
+        borderRadius: "18px",
+        background: hovered
+          ? `radial-gradient(320px circle at ${mouse.x}px ${mouse.y}px, rgba(196,204,216,0.3), #2A2E3D 50%, #1F2330)`
+          : "#1F2330",
+        transform: hovered ? "translateY(-6px) scale(1.02)" : "translateY(0) scale(1)",
+        transition: "transform 0.35s cubic-bezier(0.16,1,0.3,1), background 0.15s",
+      }}
+    >
+      <div
+        className="relative h-full overflow-hidden"
+        style={{ borderRadius: "17px", background: "#0F1114", padding: "28px", minHeight: "220px" }}
+      >
+        {/* Spotlight */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            opacity: hovered ? 1 : 0,
+            background: `radial-gradient(400px circle at ${mouse.x}px ${mouse.y}px, rgba(196,204,216,0.05), transparent 60%)`,
+            transition: "opacity 0.3s",
+          }}
+        />
+        {/* Top shimmer accent line */}
+        <div
+          className="absolute top-0 left-0 right-0 h-[1px]"
+          style={{
+            background: "linear-gradient(90deg, transparent, rgba(196,204,216,0.15), transparent)",
+          }}
+        />
+        {/* Number watermark top-right */}
+        <span
+          className="absolute select-none font-mono font-extrabold"
+          style={{
+            top: "16px",
+            right: "20px",
+            fontSize: "44px",
+            lineHeight: 1,
+            color: "#C4CCD8",
+            opacity: hovered ? 0.07 : 0.03,
+            transition: "opacity 0.4s",
+            fontFamily: "'IBM Plex Mono', monospace",
+          }}
+        >
+          {num}
+        </span>
+        {/* Icon container */}
+        <div
+          className="relative flex items-center justify-center"
+          style={{
+            width: "46px",
+            height: "46px",
+            borderRadius: "12px",
+            background: "#16181D",
+            border: "1px solid #2A2E3D",
+            color: hovered ? "#E0E5EC" : "#C4CCD8",
+            transition: "color 0.3s",
+            marginBottom: "20px",
+          }}
+        >
+          {FeatureIcons[icon]}
+        </div>
+        {/* Title */}
+        <h3
+          style={{
+            fontSize: "16px",
+            fontWeight: 700,
+            color: "#E0E5EC",
+            margin: 0,
+            lineHeight: 1.3,
+          }}
+        >
+          {title}
+        </h3>
+        {/* Expanding divider */}
+        <div
+          style={{
+            height: "1px",
+            marginTop: "12px",
+            marginBottom: "12px",
+            width: hovered ? "44px" : "24px",
+            background: "linear-gradient(90deg, rgba(196,204,216,0.35), rgba(196,204,216,0.1))",
+            transition: "width 0.5s cubic-bezier(0.16,1,0.3,1)",
+          }}
+        />
+        {/* Description */}
+        <p
+          style={{
+            fontSize: "13.5px",
+            lineHeight: 1.6,
+            color: hovered ? "#B0B8C9" : "#6C7690",
+            margin: 0,
+            transition: "color 0.3s",
+          }}
+        >
+          {desc}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Features Carousel                                                   */
+/* ------------------------------------------------------------------ */
+function FeaturesCarousel() {
+  const scrollRef = useRef(null);
+  const trackRef = useRef(null);
+  const [progress, setProgress] = useState(0);
+  const [dragging, setDragging] = useState(false);
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    setProgress(max > 0 ? el.scrollLeft / max : 0);
+  };
+
+  const scrollTo = (clientX) => {
+    const track = trackRef.current;
+    const scroll = scrollRef.current;
+    if (!track || !scroll) return;
+    const rect = track.getBoundingClientRect();
+    const thumbW = 120;
+    const usable = rect.width - thumbW;
+    if (usable <= 0) return;
+    const pos = Math.max(0, Math.min(1, (clientX - rect.left - thumbW / 2) / usable));
+    scroll.scrollLeft = pos * (scroll.scrollWidth - scroll.clientWidth);
+  };
+
+  useEffect(() => {
+    if (!dragging) return;
+    const onMove = (e) => scrollTo(e.touches ? e.touches[0].clientX : e.clientX);
+    const onUp = () => setDragging(false);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchmove", onMove, { passive: false });
+    window.addEventListener("touchend", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend", onUp);
+    };
+  });
+
+  return (
+    <div>
+      <div className="relative">
+        {/* Left fade */}
+        <div
+          className="absolute left-0 top-0 bottom-0 z-10 pointer-events-none"
+          style={{ width: "80px", background: "linear-gradient(to right, #08090C, transparent)" }}
+        />
+        {/* Right fade */}
+        <div
+          className="absolute right-0 top-0 bottom-0 z-10 pointer-events-none"
+          style={{ width: "80px", background: "linear-gradient(to left, #08090C, transparent)" }}
+        />
+        {/* Scroll container */}
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="flex gap-6 py-4 hide-scrollbar"
+          style={{
+            overflowX: "auto",
+            scrollSnapType: "x proximity",
+            paddingLeft: "max(24px, calc((100% - 1152px) / 2))",
+            paddingRight: "max(24px, calc((100% - 1152px) / 2))",
+          }}
+        >
+          {carouselFeatures.map((f) => (
+            <FeatureCard key={f.num} {...f} />
+          ))}
+        </div>
+      </div>
+      {/* Custom slider bar */}
+      <div className="flex justify-center mt-10 px-6">
+        <div
+          ref={trackRef}
+          className="relative cursor-pointer"
+          style={{
+            width: "100%",
+            maxWidth: "400px",
+            height: "4px",
+            borderRadius: "2px",
+            backgroundColor: "#1F2330",
+          }}
+          onMouseDown={(e) => { setDragging(true); scrollTo(e.clientX); }}
+          onTouchStart={(e) => { setDragging(true); scrollTo(e.touches[0].clientX); }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              height: "4px",
+              width: "120px",
+              borderRadius: "2px",
+              background: "linear-gradient(90deg, #C4CCD8, #E0E5EC, #C4CCD8)",
+              boxShadow: "0 0 8px rgba(224,229,236,0.15)",
+              left: `calc(${progress * 100}% - ${progress * 120}px)`,
+              transition: dragging ? "none" : "left 0.1s ease-out",
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ================================================================== */
 /*  MAIN COMPONENT                                                     */
 /* ================================================================== */
@@ -472,92 +765,32 @@ export default function BiasOpsLanding() {
         </Reveal>
       </section>
 
-      {/* ====== HOW IT WORKS ====== */}
-      <section id="how-it-works" className="relative z-10 scroll-mt-20 py-24 px-6">
+      {/* ====== CAPABILITIES CAROUSEL ====== */}
+      <section id="how-it-works" className="relative z-10 scroll-mt-20 py-24">
         <div className="max-w-6xl mx-auto">
           <Reveal>
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-silver-light">How It Works</h2>
-              <p className="mt-4 text-text-muted text-lg">Four steps. Upload to audit-ready in minutes.</p>
+            <div className="text-center mb-14 px-6">
+              <span
+                className="inline-block uppercase tracking-[0.2em] mb-4"
+                style={{ fontSize: "11px", color: "#3E4559", fontWeight: 600 }}
+              >
+                Capabilities
+              </span>
+              <h2
+                className="font-extrabold tracking-tight text-silver-light"
+                style={{ fontSize: "44px", lineHeight: 1.1 }}
+              >
+                Built for{" "}
+                <span className="text-shimmer">Regulated Industries</span>
+              </h2>
+              <p className="mt-5 text-[17px] text-text-muted max-w-[600px] mx-auto leading-relaxed">
+                Finance, healthcare, hiring — wherever decisions impact people, BiasOps enforces fairness.
+              </p>
             </div>
           </Reveal>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                step: "01",
-                title: "Upload",
-                icon: Upload,
-                desc: "Register your AI model and upload prediction datasets. Supports CSV, .pkl, .onnx, .pt.",
-              },
-              {
-                step: "02",
-                title: "Configure",
-                icon: Settings,
-                desc: "Install config-as-code policies from the open-source marketplace. ECOA, HMDA, CFPB, SR 11-7, FHA, GDPR, EEOC, and more.",
-              },
-              {
-                step: "03",
-                title: "Run",
-                icon: Play,
-                desc: "Execute automated fairness checks in your pipeline. Adverse impact ratios, proxy detection, denial rate disparity, explainability coverage.",
-              },
-              {
-                step: "04",
-                title: "Defend",
-                icon: ShieldCheck,
-                desc: "Get pass/fail results with measured values, thresholds, remediation steps, and an immutable audit trail. Export PDF reports for regulators.",
-              },
-            ].map((card, i) => (
-              <Reveal key={i} delay={i * 150}>
-                <div className="rounded-2xl border border-border-light hover:border-[#3A3F52] transition-colors bg-surface p-7 h-full relative overflow-hidden group">
-                  <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: "linear-gradient(90deg, transparent, rgba(196,204,216,0.12), transparent)" }} />
-                  <span className="text-[36px] font-mono font-extrabold leading-none" style={{ color: "rgba(196,204,216,0.15)" }}>{card.step}</span>
-                  <div className="w-10 h-10 rounded-lg bg-[rgba(196,204,216,0.08)] border border-border-light flex items-center justify-center mt-3 mb-4">
-                    <card.icon className="w-5 h-5 text-silver" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-silver-light">{card.title}</h3>
-                  <p className="mt-3 text-sm text-text-muted leading-relaxed">{card.desc}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ====== WHY BIASOPS ====== */}
-      <section className="relative z-10 py-24 px-6">
-        <div className="max-w-6xl mx-auto">
-          <Reveal>
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-silver-light">Why BiasOps</h2>
-            </div>
+          <Reveal delay={200}>
+            <FeaturesCarousel />
           </Reveal>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                title: "Config-as-Code Policies",
-                desc: "Version-controlled YAML policies tied to real regulations. No black boxes. Inspect every threshold, submit PRs, fork and customize.",
-              },
-              {
-                title: "Real-Time Pipeline Integration",
-                desc: "Detect bias before deployment, not after enforcement. Run checks in CI/CD, on every model update, or on a schedule.",
-              },
-              {
-                title: "Immutable Audit Trail",
-                desc: "Every check, every result, every timestamp. Audit-ready evidence that stands up to regulatory examination.",
-              },
-            ].map((card, i) => (
-              <Reveal key={i} delay={i * 150}>
-                <div className="rounded-2xl border border-border-light hover:border-[#3A3F52] transition-colors bg-surface p-8 h-full relative overflow-hidden">
-                  <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: "linear-gradient(90deg, transparent, rgba(196,204,216,0.12), transparent)" }} />
-                  <h3 className="text-xl font-semibold text-silver-light mb-4">{card.title}</h3>
-                  <p className="text-text-muted leading-relaxed">{card.desc}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
         </div>
       </section>
 
