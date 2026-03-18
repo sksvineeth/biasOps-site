@@ -1080,8 +1080,8 @@ export default function BiasOpsLanding() {
           >Pricing</a>
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <a href="#" style={{ fontSize: 13, color: "#B0B8C9" }}>Sign in</a>
-          <a href="#cta" style={{
+          <a href="https://biasops.ai/sign-in" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: "#B0B8C9" }}>Sign in</a>
+          <a href="https://biasops.ai" target="_blank" rel="noopener noreferrer" style={{
             fontSize: 13, fontWeight: 600, color: "#08090C", background: "#E0E5EC",
             padding: "8px 20px", borderRadius: 99,
             transition: "background 0.2s",
@@ -1137,7 +1137,7 @@ export default function BiasOpsLanding() {
 
         <Reveal delay={800}>
           <div style={{ marginTop: 32, display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-            <a href="#cta" style={{
+            <a href="https://biasops.ai" target="_blank" rel="noopener noreferrer" style={{
               background: "#E0E5EC", color: "#08090C", fontWeight: 600,
               padding: "14px 32px", borderRadius: 99, fontSize: 15,
               display: "inline-flex", alignItems: "center", gap: 8,
@@ -1337,6 +1337,20 @@ export default function BiasOpsLanding() {
             <p style={{ fontSize: 16, color: "#6C7690", marginTop: 12, maxWidth: 500, marginLeft: "auto", marginRight: "auto" }}>
               Drop a policy pack into your pipeline. Clone, customize, deploy. Compliance ships with your next release.
             </p>
+            <a
+              href="https://github.com/sksvineeth/biasops-policy-marketplace"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                marginTop: 16, fontSize: 13, fontWeight: 600, color: "#B0B8C9",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = "#E0E5EC"}
+              onMouseLeave={e => e.currentTarget.style.color = "#B0B8C9"}
+            >
+              <Github className="w-4 h-4" /> View on GitHub <ExternalLink className="w-3 h-3" />
+            </a>
           </div>
         </Reveal>
 
@@ -1386,7 +1400,7 @@ export default function BiasOpsLanding() {
         </Reveal>
         <Reveal delay={300}>
           <div style={{ marginTop: 32 }}>
-            <a href="#" style={{
+            <a href="https://biasops.ai" target="_blank" rel="noopener noreferrer" style={{
               background: "#E0E5EC", color: "#08090C", fontWeight: 700,
               padding: "16px 40px", borderRadius: 99, fontSize: 17,
               display: "inline-flex", alignItems: "center", gap: 8,
