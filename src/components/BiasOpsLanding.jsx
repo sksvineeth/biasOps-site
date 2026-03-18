@@ -1080,8 +1080,8 @@ export default function BiasOpsLanding() {
           >Pricing</a>
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <a href="https://biasops.ai/sign-in" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: "#B0B8C9" }}>Sign in</a>
-          <a href="https://biasops.ai" target="_blank" rel="noopener noreferrer" style={{
+          <a href="https://biasops-saas-byxb6qpv1-vineeths-projects-6b2fdd13.vercel.app/sign-in" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: "#B0B8C9" }}>Sign in</a>
+          <a href="https://biasops-saas-byxb6qpv1-vineeths-projects-6b2fdd13.vercel.app" target="_blank" rel="noopener noreferrer" style={{
             fontSize: 13, fontWeight: 600, color: "#08090C", background: "#E0E5EC",
             padding: "8px 20px", borderRadius: 99,
             transition: "background 0.2s",
@@ -1137,7 +1137,7 @@ export default function BiasOpsLanding() {
 
         <Reveal delay={800}>
           <div style={{ marginTop: 32, display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-            <a href="https://biasops.ai" target="_blank" rel="noopener noreferrer" style={{
+            <a href="https://biasops-saas-byxb6qpv1-vineeths-projects-6b2fdd13.vercel.app" target="_blank" rel="noopener noreferrer" style={{
               background: "#E0E5EC", color: "#08090C", fontWeight: 600,
               padding: "14px 32px", borderRadius: 99, fontSize: 15,
               display: "inline-flex", alignItems: "center", gap: 8,
@@ -1400,7 +1400,7 @@ export default function BiasOpsLanding() {
         </Reveal>
         <Reveal delay={300}>
           <div style={{ marginTop: 32 }}>
-            <a href="https://biasops.ai" target="_blank" rel="noopener noreferrer" style={{
+            <a href="https://biasops-saas-byxb6qpv1-vineeths-projects-6b2fdd13.vercel.app" target="_blank" rel="noopener noreferrer" style={{
               background: "#E0E5EC", color: "#08090C", fontWeight: 700,
               padding: "16px 40px", borderRadius: 99, fontSize: 17,
               display: "inline-flex", alignItems: "center", gap: 8,
