@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contact · BiasOps</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#09090B;color:#E0E5EC}
+::selection{background:rgba(196,204,216,0.25);color:#E0E5EC}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#09090B}
+::-webkit-scrollbar-thumb{background:#141418;border-radius:3px}
+a{color:inherit;text-decoration:none}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(20px);background:rgba(9,9,11,0.85);border-bottom:1px solid rgba(20,20,24,0.6);padding:16px 40px;display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto}
+@media(min-width:1201px){nav{left:50%;transform:translateX(-50%)}}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand span{font-size:18px;font-weight:800;letter-spacing:-0.5px}
+.nav-links{display:flex;gap:28px}
+.nav-links a{font-size:14px;color:#6C7690;transition:color 0.2s}
+.nav-links a:hover{color:#E0E5EC}
+.nav-cta{font-size:13px;font-weight:600;color:#09090B;background:#E0E5EC;padding:8px 20px;border-radius:99px;transition:background 0.2s}
+.nav-cta:hover{background:#C4CCD8}
+
+/* Page */
+.page{max-width:1100px;margin:0 auto;padding:140px 40px 80px}
+
+/* Hero */
+.hero{text-align:center;margin-bottom:80px}
+.hero h1{font-size:48px;font-weight:800;letter-spacing:-2.5px;color:#ECEFF4;margin-bottom:12px}
+.hero p{font-size:17px;color:#6C7690;max-width:520px;margin:0 auto;line-height:1.7}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+@media(max-width:768px){.grid{grid-template-columns:1fr;gap:40px}}
+
+/* Form */
+.form-card{background:#0F0F12;border:1px solid #141418;border-radius:16px;padding:36px}
+.form-card h2{font-size:22px;font-weight:700;color:#E0E5EC;margin-bottom:6px}
+.form-card .sub{font-size:14px;color:#6C7690;margin-bottom:28px;line-height:1.6}
+.field{margin-bottom:20px}
+.field label{display:block;font-size:13px;font-weight:600;color:#A1A1AA;margin-bottom:6px;letter-spacing:0.3px}
+.field input,.field select,.field textarea{width:100%;background:#09090B;border:1px solid #141418;border-radius:10px;padding:12px 16px;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;color:#E0E5EC;transition:border-color 0.2s;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#3F3F46}
+.field input::placeholder,.field textarea::placeholder{color:#3F3F46}
+.field select{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2371717A' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:40px}
+.field select option{background:#0F0F12;color:#E0E5EC}
+.field textarea{resize:vertical;min-height:100px}
+.submit-btn{width:100%;padding:14px;border:none;border-radius:10px;background:#E0E5EC;color:#09090B;font-size:15px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:background 0.2s}
+.submit-btn:hover{background:#C4CCD8}
+
+/* Info cards */
+.info-side{display:flex;flex-direction:column;gap:20px}
+.info-card{background:#0F0F12;border:1px solid #141418;border-radius:14px;padding:28px}
+.info-card h3{font-size:15px;font-weight:700;color:#E0E5EC;margin-bottom:6px}
+.info-card p{font-size:13px;color:#6C7690;line-height:1.6;margin-bottom:14px}
+.info-card a.link{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#A1A1AA;transition:color 0.2s}
+.info-card a.link:hover{color:#E0E5EC}
+.info-card a.link svg{width:14px;height:14px}
+
+/* Contact details bar */
+.contact-bar{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.contact-bar a{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#71717A;font-family:'IBM Plex Mono',monospace;transition:color 0.2s;padding:6px 12px;border-radius:8px;border:1px solid #141418;background:#09090B}
+.contact-bar a:hover{color:#E0E5EC;border-color:#3F3F46}
+
+/* Founder card */
+.founder{display:flex;align-items:center;gap:14px;margin-top:8px}
+.founder-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#3F3F46,#71717A);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#E0E5EC}
+.founder-info{font-size:13px}
+.founder-info .name{font-weight:600;color:#E0E5EC}
+.founder-info .role{color:#6C7690}
+
+/* Footer */
+.footer{margin-top:100px;padding-top:32px;border-top:1px solid #141418;text-align:center;font-size:12px;color:#3F3F46;padding-bottom:40px}
+.footer a{color:#6C7690;transition:color 0.2s}
+.footer a:hover{color:#E0E5EC}
+
+/* Success state */
+.success-msg{text-align:center;padding:60px 20px}
+.success-msg h3{font-size:24px;font-weight:700;color:#E0E5EC;margin-bottom:8px}
+.success-msg p{font-size:15px;color:#6C7690;max-width:400px;margin:0 auto}
+.success-msg .check{width:48px;height:48px;border-radius:50%;background:#141418;display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px}
+.success-msg .check svg{width:24px;height:24px;stroke:#A1A1AA}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-brand">
+    <svg width="30" height="30" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="nav-gm" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#E4E4E7"/><stop offset="40%" stop-color="#A1A1AA"/><stop offset="100%" stop-color="#52525B"/></linearGradient><linearGradient id="nav-gc" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#71717A"/><stop offset="50%" stop-color="#D4D4D8"/><stop offset="100%" stop-color="#71717A"/></linearGradient><linearGradient id="nav-gl" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#E4E4E7"/><stop offset="100%" stop-color="#A1A1AA"/></linearGradient><linearGradient id="nav-gr" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#A1A1AA"/><stop offset="100%" stop-color="#52525B"/></linearGradient></defs><rect x="3" y="3" width="58" height="58" rx="14" fill="none" stroke="url(#nav-gm)" stroke-width="1" opacity="0.35"/><polygon points="32,9 36,14 32,19 28,14" fill="url(#nav-gm)" stroke="#D4D4D8" stroke-width="0.3" opacity="0.9"/><line x1="32" y1="19" x2="32" y2="25" stroke="url(#nav-gm)" stroke-width="1.2" opacity="0.4"/><line x1="14" y1="25" x2="50" y2="25" stroke="url(#nav-gc)" stroke-width="1.2" opacity="0.35"/><circle cx="18" cy="32" r="3" fill="url(#nav-gl)" opacity="0.85"/><circle cx="28" cy="32" r="3" fill="url(#nav-gl)" opacity="0.85"/><circle cx="23" cy="40" r="2.5" fill="url(#nav-gl)" opacity="0.5"/><circle cx="36" cy="32" r="3" fill="url(#nav-gr)" opacity="0.75"/><circle cx="46" cy="32" r="3" fill="url(#nav-gr)" opacity="0.75"/><circle cx="41" cy="40" r="2.5" fill="url(#nav-gr)" opacity="0.4"/></svg>
+    <span style="color:#A1A1AA;font-weight:800">Bias<span style="color:#71717A;font-weight:600">Ops</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="/#product">Products</a>
+    <a href="/fair-lending.html">Fair Lending</a>
+    <a href="/llm-observability.html">LLM Compliance</a>
+  </div>
+  <a href="/contact.html" class="nav-cta" style="background:#3F3F46;color:#E0E5EC">Contact</a>
+</nav>
+
+<div class="page">
+
+  <div class="hero">
+    <h1>Get in touch</h1>
+    <p>Talk to our team about how BiasOps can embed compliance directly into your ML pipelines.</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- Left: Form -->
+    <div class="form-card" id="formCard">
+      <h2>Book a demo</h2>
+      <p class="sub">Tell us about your compliance challenges. We will walk you through how BiasOps works with your stack.</p>
+
+      <form id="contactForm" action="https://formspree.io/f/mqeywdzg" method="POST">
+        <input type="hidden" name="_next" value="https://biasops.ai/contact.html?thanks=1" />
+        <input type="hidden" name="_subject" value="BiasOps Demo Request" />
+        <div class="field">
+          <label>Your name</label>
+          <input type="text" name="name" placeholder="Jane Smith" required />
+        </div>
+
+        <div class="field">
+          <label>Work email</label>
+          <input type="email" name="email" placeholder="jane@company.com" required />
+        </div>
+
+        <div class="field">
+          <label>Company</label>
+          <input type="text" name="company" placeholder="Acme Financial" />
+        </div>
+
+        <div class="field">
+          <label>Your role</label>
+          <input type="text" name="role" placeholder="VP of Data Science" />
+        </div>
+
+        <div class="field">
+          <label>Where are you with AI compliance?</label>
+          <select name="stage" required>
+            <option value="" disabled selected>Select one</option>
+            <option value="exploring">Just starting to explore</option>
+            <option value="manual">Running manual audits today</option>
+            <option value="building">Building compliance tooling in-house</option>
+            <option value="evaluating">Evaluating vendors</option>
+            <option value="production">Running AI in regulated production</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Anything specific you want to discuss?</label>
+          <textarea name="message" placeholder="We are deploying credit scoring models and need to prove ECOA compliance to our regulators..."></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn">Book a call</button>
+      </form>
+    </div>
+
+    <!-- Right: Info cards -->
+    <div class="info-side">
+
+      <div class="info-card">
+        <h3>Talk to the founder</h3>
+        <p>BiasOps was born from building compliance infrastructure at Fortune 500 companies. Vineeth will personally walk you through the platform.</p>
+        <div class="founder">
+          <div class="founder-avatar">VR</div>
+          <div class="founder-info">
+            <div class="name">Vineeth Reddy</div>
+            <div class="role">Founder &amp; CEO</div>
+          </div>
+        </div>
+        <div class="contact-bar">
+          <a href="mailto:Vineeth@biasops.ai">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg>
+            Vineeth@biasops.ai
+          </a>
+          <a href="https://www.linkedin.com/company/biasops" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+            LinkedIn
+          </a>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <h3>Documentation</h3>
+        <p>See BiasOps in action with our regulatory compliance walkthroughs.</p>
+        <a href="/fair-lending.html" class="link">
+          Fair Lending Compliance
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        </a>
+        <br/><br/>
+        <a href="/llm-observability.html" class="link">
+          LLM Compliance Observability
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <div class="info-card">
+        <h3>Open source</h3>
+        <p>Browse our policy packs on GitHub. Every policy is Apache 2.0.</p>
+        <a href="https://github.com/sksvineeth/biasops-policy-marketplace" target="_blank" rel="noopener noreferrer" class="link">
+          Policy Marketplace
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+
+      <div class="info-card">
+        <h3>General inquiries</h3>
+        <p>For press, partnerships, or anything else.</p>
+        <div class="contact-bar">
+          <a href="mailto:hello@biasops.ai">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg>
+            hello@biasops.ai
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span>© 2026 BiasOps · </span>
+    <a href="/">Home</a> · 
+    <a href="/#product">Products</a> · 
+    <a href="https://github.com/sksvineeth/biasops-policy-marketplace" target="_blank" rel="noopener noreferrer">GitHub</a>
+  </div>
+
+</div>
+
+<script>
+// Show thank you message if redirected back after submission
+if (new URLSearchParams(window.location.search).has('thanks')) {
+  const name = 'there';
+  document.getElementById('formCard').innerHTML = `
+    <div class="success-msg">
+      <div class="check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h3>Thank you</h3>
+      <p>We will be in touch within 24 hours to schedule your demo.</p>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>

@@ -1136,10 +1136,13 @@ function NavDropdown({ label, items }) {
         onMouseLeave={e => { if (!open) e.target.style.color = "#6C7690"; }}
       >
         {label}
-        <ChevronDown className="w-3 h-3" style={{
+        <span style={{
+          display: "inline-flex",
           transform: open ? "rotate(180deg)" : "rotate(0)",
           transition: "transform 0.2s",
-        }} />
+        }}>
+          <ChevronDown className="w-3 h-3" />
+        </span>
       </button>
 
       {open && (
@@ -1293,14 +1296,14 @@ export default function BiasOpsLanding() {
             { text: "Fair Lending Compliance", desc: "ECOA, HMDA, CFPB policy walkthrough", href: "/fair-lending.html" },
             { text: "LLM Compliance Observability", desc: "Six monitoring layers for regulated LLMs", href: "/llm-observability.html" },
           ]} />
-          <a href="#cta" style={{ fontSize: 14, color: "#6C7690", transition: "color 0.2s" }}
+          <a href="/contact.html" style={{ fontSize: 14, color: "#6C7690", transition: "color 0.2s" }}
             onMouseEnter={e => e.target.style.color = "#E0E5EC"}
             onMouseLeave={e => e.target.style.color = "#6C7690"}
           >Pricing</a>
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <a href="https://app.biasops.ai/sign-in" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: "#B0B8C9" }}>Sign in</a>
-          <a href="https://app.biasops.ai" target="_blank" rel="noopener noreferrer" style={{
+          <a href="/contact.html" style={{
             fontSize: 13, fontWeight: 600, color: "#09090B", background: "#E0E5EC",
             padding: "8px 20px", borderRadius: 99,
             transition: "background 0.2s",
@@ -1368,7 +1371,7 @@ export default function BiasOpsLanding() {
 
         <Reveal delay={800}>
           <div style={{ marginTop: 32, display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-            <a href="https://app.biasops.ai" target="_blank" rel="noopener noreferrer" style={{
+            <a href="/contact.html" style={{
               background: "#E0E5EC", color: "#09090B", fontWeight: 600,
               padding: "14px 32px", borderRadius: 99, fontSize: 15,
               display: "inline-flex", alignItems: "center", gap: 8,
@@ -1642,7 +1645,7 @@ export default function BiasOpsLanding() {
         </Reveal>
         <Reveal delay={300}>
           <div style={{ marginTop: 32 }}>
-            <a href="https://app.biasops.ai" target="_blank" rel="noopener noreferrer" style={{
+            <a href="/contact.html" style={{
               background: "#E0E5EC", color: "#09090B", fontWeight: 700,
               padding: "16px 40px", borderRadius: 99, fontSize: 17,
               display: "inline-flex", alignItems: "center", gap: 8,
@@ -1722,14 +1725,14 @@ export default function BiasOpsLanding() {
             {[
               { text: "Documentation", href: "#" },
               { text: "Blog", href: "#" },
-              { text: "GitHub", href: "https://github.com/sksvineeth/biasops-policy-marketplace" },
+              { text: "GitHub", href: "https://github.com/sksvineeth/biasops-policy-marketplace", icon: "github", external: true },
               { text: "API Reference", href: "#" },
               { text: "Changelog", href: "#" },
             ].map((l, j) => (
-              <a key={j} href={l.href} {...(l.text === "GitHub" ? { target: "_blank", rel: "noopener noreferrer" } : {})} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: "#6C7690", marginBottom: 9, transition: "color 0.2s" }}
+              <a key={j} href={l.href} target={l.external ? "_blank" : undefined} rel={l.external ? "noopener noreferrer" : undefined} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#6C7690", marginBottom: 9, transition: "color 0.2s" }}
                 onMouseEnter={e => e.currentTarget.style.color = "#E0E5EC"}
                 onMouseLeave={e => e.currentTarget.style.color = "#6C7690"}
-              >{l.text === "GitHub" && <Github className="w-3 h-3" />}{l.text}{l.text === "GitHub" && <ExternalLink className="w-3 h-3" />}</a>
+              >{l.icon === "github" && <Github className="w-3 h-3" />}{l.text}{l.external && <ExternalLink className="w-3 h-3" />}</a>
             ))}
           </div>
 
@@ -1738,14 +1741,14 @@ export default function BiasOpsLanding() {
             <div style={{ fontSize: 12, fontWeight: 600, color: "#B0B8C9", marginBottom: 16 }}>Company</div>
             {[
               { text: "About", href: "#" },
-              { text: "Contact", href: "mailto:Vineeth@biasops.ai" },
-              { text: "LinkedIn", href: "https://www.linkedin.com/company/biasops" },
-              { text: "Vineeth@biasops.ai", href: "mailto:Vineeth@biasops.ai" },
+              { text: "Contact", href: "mailto:Vineeth@biasops.ai", icon: "mail" },
+              { text: "LinkedIn", href: "https://www.linkedin.com/company/biasops", icon: "linkedin", external: true },
+              { text: "Vineeth@biasops.ai", href: "mailto:Vineeth@biasops.ai", icon: "mail" },
             ].map((l, j) => (
-              <a key={j} href={l.href} {...(l.text === "LinkedIn" ? { target: "_blank", rel: "noopener noreferrer" } : {})} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: "#6C7690", marginBottom: 9, transition: "color 0.2s" }}
+              <a key={j} href={l.href} target={l.external ? "_blank" : undefined} rel={l.external ? "noopener noreferrer" : undefined} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#6C7690", marginBottom: 9, transition: "color 0.2s" }}
                 onMouseEnter={e => e.currentTarget.style.color = "#E0E5EC"}
                 onMouseLeave={e => e.currentTarget.style.color = "#6C7690"}
-              >{l.text === "LinkedIn" && <Linkedin className="w-3 h-3" />}{(l.text === "Contact" || l.text === "Vineeth@biasops.ai") && <Mail className="w-3 h-3" />}{l.text}{l.text === "LinkedIn" && <ExternalLink className="w-3 h-3" />}</a>
+              >{l.icon === "mail" && <Mail className="w-3 h-3" />}{l.icon === "linkedin" && <Linkedin className="w-3 h-3" />}{l.text}{l.external && <ExternalLink className="w-3 h-3" />}</a>
             ))}
           </div>
         </div>

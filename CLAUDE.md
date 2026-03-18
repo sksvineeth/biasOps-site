@@ -7,50 +7,57 @@ Marketing landing page for BiasOps — AI governance / fairness infrastructure p
 - **Framework**: Create React App (CRA)
 - **Styling**: Tailwind CSS v3 (tailwind.config.js)
 - **Fonts**: Plus Jakarta Sans (400-800), IBM Plex Mono (400, 500) via Google Fonts (loaded in public/index.html)
-- **No icon library** — uses inline SVG icons
+- **Icons**: lucide-react (ArrowRight, ExternalLink, Github, ChevronDown, Mail, Linkedin)
 
-## Design System — Silver-on-Black
-Matches the SaaS dashboard palette exactly.
+## Design System — v5 Silver Metal on Void Black
 
-| Tailwind Token | Value |
+| Token | Value |
 |----------------|-------|
-| `bg` | `#08090C` |
-| `surface` | `#0F1114` |
-| `surface-raised` | `#16181D` |
+| `void` (bg) | `#09090B` |
+| `surface` | `#0F0F12` |
+| `surface-raised` | `#111114` |
+| `border` | `#141418` |
+| `border-light` | `#18181B` |
 | `silver` | `#C4CCD8` |
 | `silver-light` | `#E0E5EC` |
 | `silver-dark` | `#8A95A8` |
 | `text-secondary` | `#B0B8C9` |
 | `text-muted` | `#6C7690` |
 | `text-dim` | `#3E4559` |
-| `border` | `#1F2330` |
-| `border-light` | `#2A2E3D` |
+
+## Pages
+- `src/components/BiasOpsLanding.jsx` — main SPA landing page
+- `public/fair-lending.html` — fair lending compliance deep-dive doc
+- `public/llm-observability.html` — LLM compliance observability deep-dive doc
+- `public/contact.html` — contact/demo request form powered by Formspree
 
 ## Main File
 Everything is in `src/components/BiasOpsLanding.jsx`. Contains:
 
 ### Helper Components
 - **`useReveal` / `Reveal`** — IntersectionObserver scroll-reveal with staggered delays and `cubic-bezier(0.16, 1, 0.3, 1)`
-- **`BiasOpsLogo`** — Full SVG isometric cube with gradients + glow filter. Counter-based unique IDs. Sizes: hero 96, nav 36, CTA 48.
-- **`BiasOpsIcon`** — Compact flat SVG, no glow. Footer size 18.
-- **`YamlBlock`** — ECOA policy YAML with syntax coloring, browser chrome dots, filename label
-- **`DashboardPreview`** — Browser chrome mock with sidebar, 4 stat cards, 8-row results table
-- **`FeatureCard`** — Interactive card with mouse-tracking gradient border, spotlight, hover lift (-6px + scale 1.02), expanding divider (24px→44px), number watermark (44px IBM Plex Mono, 3%→7% opacity on hover), description brightens on hover (#6C7690→#B0B8C9)
-- **`FeaturesCarousel`** — Horizontal scroll with 6 FeatureCards (flex 0 0 320px), 80px edge fades, custom slider bar (400px max, silver gradient thumb with glow, scroll↔slider sync, touch support)
-- **`FeatureIcons`** — Object with 6 inline SVG icons: radar, branch, chart, code, shield, plug (22px strokes)
+- **`BiasOpsLogo`** — v5 Silver Metal balance scale with diamond fulcrum, imperative DOM animation engine cycling 4 states (idle 900ms/node, scan 220ms/node, bias detected with gold spark #FBBF24, enforce rebalance). Accepts `animate` and `onPhaseChange` props. Counter-based unique IDs.
+- **`BiasOpsIcon`** — Silver rounded square container 64x64 rx=14, diamond fulcrum, bright silver left cluster, darker steel right cluster.
+- **Wordmark** — "Bias" Silver #A1A1AA weight 800, "Ops" Steel #71717A weight 600
+- **`CinematicIntro`** — Gaming-style loading overlay with scanlines, pulse glow, animated logo, and loading bar
+- **`HeroCard`** — OpenLayer-style animated compliance check cards
+- **`NavDropdown`** — Dropdown nav component with ChevronDown icon rotation
+- **`ProductSection`** — Alternating product feature blocks with animated code/dashboard demos
+- **`TemplateCard`** — Marketplace policy template cards with tag pills
 
 ### Page Sections (top to bottom)
-1. **Background** — Noise texture (feTurbulence), 64px grid, two radial gradient orbs
-2. **Navbar** — Fixed, backdrop-blur, logo 36px, nav links, Sign in + Request Early Access → app sign-in
-3. **Hero** — Floating logo 96px (6s animation), pill badge, "Deploy Models you can **Defend**" (only "Defend" shimmers), CTA buttons
-4. **Stats** — 10+ Policies, 23 Checks, 5 Frameworks, < 4 min
-5. **Dashboard Preview** — Browser chrome mock
-6. **Capabilities Carousel** — "CAPABILITIES" label (11px uppercase #3E4559), "Built for Regulated Industries" (44px, "Regulated Industries" shimmers). 6 cards: Adaptive Bias Detection, Smart Routing Engine, Governance Dashboard, Config-as-Code Policies, Immutable Audit Trail, Plug-and-Play Integration
-7. **Regulatory Frameworks** — 8 pills
-8. **Policies on GitHub** — YAML block + link
-9. **Credibility** — 4 stat cards
-10. **CTA** — Logo + heading + Early Access button
-11. **Footer** — 4-column grid
+1. **CinematicIntro** — Gaming-style loading overlay with animated logo
+2. **Background** — Noise texture (feTurbulence), grid, radial gradient orbs
+3. **Navbar** — Fixed, backdrop-blur, logo, Products/Docs dropdowns (with ChevronDown), Pricing, Sign in (links to app.biasops.ai/sign-in) + Book a Demo (links to /contact.html)
+4. **Hero** — Animated BiasOpsLogo with phase-aware ambient glow, pill badge, "Deploy Models You Can Defend" shimmer, hero CTA buttons (Book a Demo + View on GitHub with lucide-react icons), animated HeroCards
+5. **Product sections** — Policy Engine, Data Compliance, Model Compliance, LLM Compliance, Agent Governance, Audit & Reporting with animated demos
+6. **Policy Marketplace** — Template cards grid, GitHub link, CLI init command
+7. **CTA** — Logo + "Compliance is not a patch. It is the architecture." + Book a Demo button
+8. **Footer** — 5-column grid (Brand, Products, Use Cases, Resources, Company) with lucide-react icons on GitHub/LinkedIn/Mail links
+
+### CTA Routing
+- All "Book a Demo" / CTA links point to `/contact.html` (not `#cta`)
+- Contact form submits to Formspree (`https://formspree.io/f/mqeywdzg`), redirects to `/contact.html?thanks=1` on success
 
 ## CSS (`src/index.css`)
 - `.text-shimmer` — 135deg gradient, `background-size: 200% auto`, keyframe `-200%→200%`
@@ -64,8 +71,8 @@ Everything is in `src/components/BiasOpsLanding.jsx`. Contains:
 - `fadeIn`: 0.5s ease-out
 
 ## Environment
-- `REACT_APP_APP_URL` in `.env.local` (gitignored). Default: `http://localhost:3000`. Production: `https://app.biasops.ai`.
-- All CTA / sign-in links use `process.env.REACT_APP_APP_URL || "http://localhost:3000"`.
+- Sign-in link points directly to `https://app.biasops.ai/sign-in`
+- All CTA / "Book a Demo" links point to `/contact.html`
 
 ## Deployment
 - **Vercel project**: `bias-ops-site`
