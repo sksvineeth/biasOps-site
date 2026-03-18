@@ -8,11 +8,11 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
-body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#08090C;color:#E0E5EC}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#09090B;color:#E0E5EC}
 ::selection{background:rgba(196,204,216,0.25);color:#E0E5EC}
 ::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:#08090C}
-::-webkit-scrollbar-thumb{background:#1F2330;border-radius:3px}
+::-webkit-scrollbar-track{background:#09090B}
+::-webkit-scrollbar-thumb{background:#141418;border-radius:3px}
 a{color:inherit;text-decoration:none}
 
 @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
@@ -36,11 +36,11 @@ nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);-webkit-backdrop
   background:rgba(8,9,12,0.82);border-bottom:1px solid rgba(31,35,48,0.5);
   height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 40px}
 .nav-brand{display:flex;align-items:center;gap:10px}
-.nav-brand span{font-size:17px;font-weight:700;letter-spacing:-0.3px;color:#E0E5EC}
+.nav-brand span{font-size:18px;font-weight:800;letter-spacing:-0.5px}
 .nav-links{display:flex;gap:28px}
 .nav-links a{font-size:14px;color:#6C7690;transition:color 0.2s}
 .nav-links a:hover{color:#E0E5EC}
-.nav-cta{font-size:13px;font-weight:600;color:#08090C;background:#E0E5EC;padding:8px 20px;border-radius:99px;transition:background 0.2s}
+.nav-cta{font-size:13px;font-weight:600;color:#09090B;background:#E0E5EC;padding:8px 20px;border-radius:99px;transition:background 0.2s}
 .nav-cta:hover{background:#C4CCD8}
 
 .hero{position:relative;z-index:1;padding:120px 40px 60px;max-width:900px;margin:0 auto;animation:fadeIn 0.8s cubic-bezier(0.16,1,0.3,1) forwards}
@@ -60,13 +60,13 @@ h2:first-of-type{margin-top:0}
 p.body{font-size:15px;color:#6C7690;line-height:1.8;margin-bottom:20px}
 p.body strong{color:#E0E5EC;font-weight:600}
 
-.scenario-card{background:#0F1114;border:1px solid #1F2330;border-radius:16px;padding:28px;margin-bottom:48px;border-left:3px solid #F5A623}
-.scenario-card .label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#F5A623;margin-bottom:8px}
+.scenario-card{background:#0F0F12;border:1px solid #141418;border-radius:16px;padding:28px;margin-bottom:48px;border-left:3px solid #A1A1AA}
+.scenario-card .label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#A1A1AA;margin-bottom:8px}
 .scenario-card h3{font-size:20px;font-weight:700;color:#ECEFF4;margin-bottom:12px}
 .scenario-card p{font-size:15px;color:#6C7690;line-height:1.7}
 
 .comparison{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:32px 0 48px}
-.comparison-col{background:#0F1114;border:1px solid #1F2330;border-radius:14px;padding:22px}
+.comparison-col{background:#0F0F12;border:1px solid #141418;border-radius:14px;padding:22px}
 .comparison-col h4{font-size:13px;font-weight:600;color:#6C7690;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
 .comparison-col.biasops{border-color:#2A2E3D}
 .comparison-col ul{list-style:none;padding:0}
@@ -76,45 +76,45 @@ p.body strong{color:#E0E5EC;font-weight:600}
 .comparison-col.generic li::before{background:#3E4559}
 .comparison-col.biasops li::before{background:#28C840}
 
-.layer-section{margin:48px 0;padding:32px;background:#0F1114;border:1px solid #1F2330;border-radius:16px;position:relative;overflow:hidden}
+.layer-section{margin:48px 0;padding:32px;background:#0F0F12;border:1px solid #141418;border-radius:16px;position:relative;overflow:hidden}
 .layer-section .top-line{position:absolute;top:0;left:0;right:0;height:1px;
   background:linear-gradient(90deg,transparent,rgba(196,204,216,0.12),transparent)}
 .layer-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 12px;border-radius:6px;margin-bottom:14px}
 .layer-section h3{font-size:22px;font-weight:800;color:#ECEFF4;letter-spacing:-1px;margin-bottom:8px}
 .layer-section .layer-subtitle{font-size:14px;color:#8A95A8;font-style:italic;margin-bottom:18px}
-.layer-section .layer-problem{font-size:14px;color:#6C7690;line-height:1.7;margin-bottom:20px;padding:16px;background:#16181D;border-radius:10px;border-left:2px solid #3E4559}
+.layer-section .layer-problem{font-size:14px;color:#6C7690;line-height:1.7;margin-bottom:20px;padding:16px;background:#111114;border-radius:10px;border-left:2px solid #3E4559}
 .layer-section .layer-problem em{color:#C4CCD8;font-style:normal}
 .layer-solution{font-size:14px;color:#C4CCD8;line-height:1.7;margin-bottom:18px}
 .checks-grid{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
-.check-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#16181D;border:1px solid #1F2330;border-radius:8px}
+.check-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#111114;border:1px solid #141418;border-radius:8px}
 .check-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .check-item span{font-size:13px;color:#C4CCD8}
 .check-item .threshold{font-size:11px;color:#3E4559;font-family:'IBM Plex Mono',monospace;margin-left:auto;flex-shrink:0}
 .layer-differentiator{font-size:13px;color:#6C7690;padding:12px 14px;background:rgba(196,204,216,0.03);border-radius:8px;border-left:2px solid #C4CCD8}
 .layer-differentiator strong{color:#E0E5EC;font-weight:600}
 
-.trace-block{background:#0A0C10;border:1px solid #1F2330;border-radius:14px;overflow:hidden;margin:24px 0 48px}
-.trace-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #1F2330}
+.trace-block{background:#0A0C10;border:1px solid #141418;border-radius:14px;overflow:hidden;margin:24px 0 48px}
+.trace-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #141418}
 .trace-header .dots{display:flex;gap:6px}
 .trace-header .dots span{width:10px;height:10px;border-radius:50%}
 .trace-header .filename{font-size:11px;color:#3E4559;font-family:'IBM Plex Mono',monospace}
 .trace-body{padding:18px 22px}
 .trace-step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
 .trace-step:last-child{margin-bottom:0}
-.trace-icon{width:28px;height:28px;border-radius:8px;background:#16181D;border:1px solid #1F2330;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;color:#C4CCD8;font-family:'IBM Plex Mono',monospace}
+.trace-icon{width:28px;height:28px;border-radius:8px;background:#111114;border:1px solid #141418;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;color:#C4CCD8;font-family:'IBM Plex Mono',monospace}
 .trace-content{flex:1}
 .trace-content .trace-label{font-size:12px;font-weight:600;color:#E0E5EC;margin-bottom:2px}
 .trace-content .trace-detail{font-size:12px;color:#6C7690;font-family:'IBM Plex Mono',monospace}
 .trace-content .trace-flag{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;margin-top:4px}
 .flag-pass{background:rgba(40,200,64,0.12);color:#28C840}
 .flag-fail{background:rgba(255,95,87,0.12);color:#FF5F57}
-.flag-warn{background:rgba(245,166,35,0.12);color:#F5A623}
-.trace-connector{width:1px;height:10px;background:#1F2330;margin:0 0 0 13px}
+.flag-warn{background:rgba(245,166,35,0.12);color:#A1A1AA}
+.trace-connector{width:1px;height:10px;background:#141418;margin:0 0 0 13px}
 
 .cta-section{text-align:center;padding:80px 0;border-top:1px solid rgba(31,35,48,0.5);margin-top:48px}
 .cta-section h2{font-size:36px;margin-bottom:16px}
 .cta-section p{font-size:16px;color:#6C7690;max-width:520px;margin:0 auto 28px}
-.btn-primary{display:inline-flex;align-items:center;gap:8px;background:#E0E5EC;color:#08090C;font-weight:700;
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:#E0E5EC;color:#09090B;font-weight:700;
   padding:14px 32px;border-radius:99px;font-size:15px;transition:background 0.2s}
 .btn-primary:hover{background:#C4CCD8}
 .btn-ghost{display:inline-flex;align-items:center;gap:8px;border:1px solid #4A5568;color:#E0E5EC;font-weight:600;
@@ -133,8 +133,8 @@ footer{position:relative;z-index:1;border-top:1px solid rgba(31,35,48,0.5);paddi
 <!-- NAV -->
 <nav>
   <a href="/" class="nav-brand">
-    <svg width="30" height="30" viewBox="0 0 48 48" fill="none"><path d="M6 16L24 6L24 28L6 38Z" fill="#C4CCD8" opacity="0.35"/><path d="M42 16L24 6L24 28L42 38Z" fill="#6B7A90" opacity="0.25"/><path d="M6 38L24 28L42 38L24 48Z" fill="#3D4756" opacity="0.3"/><path d="M16 26L22 32L34 18" stroke="#E8ECF1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-    <span>BiasOps</span>
+    <svg width="30" height="30" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="nav-gm" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#E4E4E7"/><stop offset="40%" stop-color="#A1A1AA"/><stop offset="100%" stop-color="#52525B"/></linearGradient><linearGradient id="nav-gc" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#71717A"/><stop offset="50%" stop-color="#D4D4D8"/><stop offset="100%" stop-color="#71717A"/></linearGradient><linearGradient id="nav-gl" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#E4E4E7"/><stop offset="100%" stop-color="#A1A1AA"/></linearGradient><linearGradient id="nav-gr" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#A1A1AA"/><stop offset="100%" stop-color="#52525B"/></linearGradient></defs><rect x="3" y="3" width="58" height="58" rx="14" fill="none" stroke="url(#nav-gm)" stroke-width="1" opacity="0.35"/><polygon points="32,9 36,14 32,19 28,14" fill="url(#nav-gm)" stroke="#D4D4D8" stroke-width="0.3" opacity="0.9"/><line x1="32" y1="19" x2="32" y2="25" stroke="url(#nav-gm)" stroke-width="1.2" opacity="0.4"/><line x1="14" y1="25" x2="50" y2="25" stroke="url(#nav-gc)" stroke-width="1.2" opacity="0.35"/><line x1="19" y1="25" x2="18" y2="31" stroke="#A1A1AA" stroke-width="0.6" opacity="0.2"/><line x1="27" y1="25" x2="28" y2="31" stroke="#A1A1AA" stroke-width="0.6" opacity="0.2"/><circle cx="18" cy="32" r="3" fill="url(#nav-gl)" opacity="0.85"/><circle cx="28" cy="32" r="3" fill="url(#nav-gl)" opacity="0.85"/><circle cx="23" cy="40" r="2.5" fill="url(#nav-gl)" opacity="0.5"/><circle cx="23" cy="49" r="2" fill="url(#nav-gl)" opacity="0.3"/><line x1="18" y1="35" x2="23" y2="40" stroke="#A1A1AA" stroke-width="0.5" opacity="0.12"/><line x1="28" y1="35" x2="23" y2="40" stroke="#A1A1AA" stroke-width="0.5" opacity="0.12"/><line x1="37" y1="25" x2="36" y2="31" stroke="#71717A" stroke-width="0.6" opacity="0.2"/><line x1="45" y1="25" x2="46" y2="31" stroke="#71717A" stroke-width="0.6" opacity="0.2"/><circle cx="36" cy="32" r="3" fill="url(#nav-gr)" opacity="0.75"/><circle cx="46" cy="32" r="3" fill="url(#nav-gr)" opacity="0.75"/><circle cx="41" cy="40" r="2.5" fill="url(#nav-gr)" opacity="0.4"/><circle cx="41" cy="49" r="2" fill="url(#nav-gr)" opacity="0.25"/><line x1="36" y1="35" x2="41" y2="40" stroke="#71717A" stroke-width="0.5" opacity="0.12"/><line x1="46" y1="35" x2="41" y2="40" stroke="#71717A" stroke-width="0.5" opacity="0.12"/></svg>
+    <span style="color:#A1A1AA;font-weight:800">Bias<span style="color:#71717A;font-weight:600">Ops</span></span>
   </a>
   <div class="nav-links">
     <a href="/#product">Products</a>
@@ -251,12 +251,12 @@ footer{position:relative;z-index:1;border-top:1px solid rgba(31,35,48,0.5);paddi
         <span class="threshold">real-time</span>
       </div>
       <div class="check-item">
-        <div class="check-dot" style="background:#F5A623"></div>
+        <div class="check-dot" style="background:#A1A1AA"></div>
         <span>Credit decision language detection (ECOA, FCRA)</span>
         <span class="threshold">real-time</span>
       </div>
       <div class="check-item">
-        <div class="check-dot" style="background:#F5A623"></div>
+        <div class="check-dot" style="background:#A1A1AA"></div>
         <span>Insurance recommendation boundary (state DOI)</span>
         <span class="threshold">real-time</span>
       </div>
@@ -270,7 +270,7 @@ footer{position:relative;z-index:1;border-top:1px solid rgba(31,35,48,0.5);paddi
   <!-- ═══ LAYER 2 ═══ -->
   <div class="layer-section">
     <div class="top-line"></div>
-    <div class="layer-tag" style="background:rgba(245,166,35,0.1);color:#F5A623">Layer 2 · High</div>
+    <div class="layer-tag" style="background:rgba(245,166,35,0.1);color:#A1A1AA">Layer 2 · High</div>
     <h3>Response fairness monitoring</h3>
     <div class="layer-subtitle">Are different people getting different quality of service?</div>
 
@@ -284,17 +284,17 @@ footer{position:relative;z-index:1;border-top:1px solid rgba(31,35,48,0.5);paddi
 
     <div class="checks-grid">
       <div class="check-item">
-        <div class="check-dot" style="background:#F5A623"></div>
+        <div class="check-dot" style="background:#A1A1AA"></div>
         <span>Response quality parity across demographic cohorts</span>
         <span class="threshold">&lt; 10% variance</span>
       </div>
       <div class="check-item">
-        <div class="check-dot" style="background:#F5A623"></div>
+        <div class="check-dot" style="background:#A1A1AA"></div>
         <span>Tone and sentiment consistency analysis</span>
         <span class="threshold">continuous</span>
       </div>
       <div class="check-item">
-        <div class="check-dot" style="background:#F5A623"></div>
+        <div class="check-dot" style="background:#A1A1AA"></div>
         <span>Information completeness by user segment</span>
         <span class="threshold">&lt; 15% gap</span>
       </div>
@@ -336,7 +336,7 @@ footer{position:relative;z-index:1;border-top:1px solid rgba(31,35,48,0.5);paddi
     <div class="trace-header">
       <div class="dots">
         <span style="background:#FF5F57"></span>
-        <span style="background:#F5A623"></span>
+        <span style="background:#A1A1AA"></span>
         <span style="background:#28C840"></span>
       </div>
       <span class="filename">biasops trace · loan_app_29841 · adverse action</span>
@@ -429,12 +429,12 @@ footer{position:relative;z-index:1;border-top:1px solid rgba(31,35,48,0.5);paddi
         <span class="threshold">per-response</span>
       </div>
       <div class="check-item">
-        <div class="check-dot" style="background:#F5A623"></div>
+        <div class="check-dot" style="background:#A1A1AA"></div>
         <span>Consent chain verification (authorized for this use?)</span>
         <span class="threshold">per-retrieval</span>
       </div>
       <div class="check-item">
-        <div class="check-dot" style="background:#F5A623"></div>
+        <div class="check-dot" style="background:#A1A1AA"></div>
         <span>Cross-session memory contamination detection</span>
         <span class="threshold">continuous</span>
       </div>
@@ -477,12 +477,12 @@ footer{position:relative;z-index:1;border-top:1px solid rgba(31,35,48,0.5);paddi
         <span class="threshold">per-response</span>
       </div>
       <div class="check-item">
-        <div class="check-dot" style="background:#F5A623"></div>
+        <div class="check-dot" style="background:#A1A1AA"></div>
         <span>False policy reference identification</span>
         <span class="threshold">per-response</span>
       </div>
       <div class="check-item">
-        <div class="check-dot" style="background:#F5A623"></div>
+        <div class="check-dot" style="background:#A1A1AA"></div>
         <span>Unauthorized compliance assurance flagging</span>
         <span class="threshold">per-response</span>
       </div>
@@ -530,7 +530,7 @@ footer{position:relative;z-index:1;border-top:1px solid rgba(31,35,48,0.5);paddi
         <span class="threshold">per-session</span>
       </div>
       <div class="check-item">
-        <div class="check-dot" style="background:#F5A623"></div>
+        <div class="check-dot" style="background:#A1A1AA"></div>
         <span>Downstream disclosure stripping detection</span>
         <span class="threshold">continuous</span>
       </div>

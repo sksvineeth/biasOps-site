@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import {
-  ArrowRight,
-  ExternalLink,
-  Github,
-  ChevronDown,
-  Mail,
-  Linkedin,
-} from "lucide-react";
+import { ArrowRight, ExternalLink, Github, ChevronDown, Mail, Linkedin } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════════════════
    BIASOPS LANDING PAGE — OpenLayer-inspired + Gaming transitions
@@ -47,41 +40,257 @@ function Reveal({ children, delay = 0, className = "", fromY = 32 }) {
   );
 }
 
-/* ─── BiasOps Logo SVG ─── */
+/* ─── BiasOps Logo SVG (v5 Silver Metal) ─── */
 let logoC = 0;
-function BiasOpsLogo({ size = 40 }) {
+function BiasOpsLogo({ size = 40, animate = false, onPhaseChange }) {
   const [id] = useState(() => `logo-${++logoC}`);
+  const svgRef = useRef(null);
+  const phaseRef = useRef(0);
+  const litRef = useRef(-1);
+  const animRef = useRef(null);
+  const timersRef = useRef([]);
+  const [, forceRender] = useState(0);
+
+  const leftNodes = [[48,96,6,0.5],[96,96,6,0.5],[72,120,5,0.35],[44,146,4,0.22],[100,146,4,0.22],[72,170,5.5,0.28]];
+  const rightNodes = [[184,96,6,0.4],[232,96,6,0.4],[208,120,5,0.28],[180,146,4,0.18],[236,146,4,0.18],[208,170,5.5,0.22]];
+
+  // Imperative animation engine
+  useEffect(() => {
+    if (!animate) return;
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const getN = (sel) => svg.querySelectorAll(sel);
+    const leftNIds = ['l0','l1','l2','l3','l4','l5'];
+    const rightNIds = ['r0','r1','r2','r3','r4','r5'];
+    const allNIds = ['fulcrum', ...leftNIds, ...rightNIds];
+    const beam = svg.querySelector('[data-edge="beam"]');
+    const beamGroup = svg.querySelector('.beam-group');
+    const pulseBox = svg.querySelector('.pulse-container');
+
+    function nodeEl(nid) { return svg.querySelector(`[data-node="${nid}"]`); }
+    function glowEl(nid) { return svg.querySelector(`[data-glow="${nid}"]`); }
+    function edgeEl(eid) { return svg.querySelector(`[data-edge="${eid}"]`); }
+
+    const leftEIds = ['l-sus1','l-sus2','l-e1','l-e2','l-e3','l-e4','l-e5','l-e6','l-e7','l-e8'];
+    const rightEIds = ['r-sus1','r-sus2','r-e1','r-e2','r-e3','r-e4','r-e5','r-e6','r-e7','r-e8'];
+
+    const nodePos = {fulcrum:[140,24],l0:[48,96],l1:[96,96],l2:[72,120],l3:[44,146],l4:[100,146],l5:[72,170],r0:[184,96],r1:[232,96],r2:[208,120],r3:[180,146],r4:[236,146],r5:[208,170]};
+
+    function lightNode(nid, on) {
+      const n = nodeEl(nid), g = glowEl(nid);
+      if (!n) return;
+      if (on) {
+        n.style.opacity = '1'; n.style.transition = 'opacity 0.25s';
+        if (g) { g.style.opacity = '0.7'; g.style.transition = 'opacity 0.25s'; }
+        const [cx,cy] = nodePos[nid] || [0,0];
+        const color = n.dataset.sparkMode ? '#FBBF24' : '#D4D4D8';
+        const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        ring.setAttribute('cx', cx); ring.setAttribute('cy', cy);
+        ring.setAttribute('r', '5'); ring.setAttribute('fill', 'none');
+        ring.setAttribute('stroke', color); ring.setAttribute('stroke-width', '1.5');
+        ring.style.animation = 'pulseRing 1.2s ease-out forwards';
+        if (pulseBox) pulseBox.appendChild(ring);
+        setTimeout(() => ring.remove(), 1300);
+      } else {
+        n.style.opacity = '0.08'; n.style.transition = 'opacity 0.6s';
+        if (g) { g.style.opacity = '0'; g.style.transition = 'opacity 0.6s'; }
+      }
+    }
+    function dimNode(nid) { const n = nodeEl(nid), g = glowEl(nid); if (!n) return; n.style.opacity = '0.06'; n.style.transition = 'opacity 0.6s'; if (g) { g.style.opacity = '0'; g.style.transition = 'opacity 0.6s'; } }
+    function idleNode(nid) { const n = nodeEl(nid), g = glowEl(nid); if (!n) return; n.style.transition = 'opacity 0.5s'; n.style.opacity = n.getAttribute('opacity') || '0.4'; if (n.dataset) n.dataset.sparkMode = ''; if (g) { g.style.opacity = '0'; g.style.transition = 'opacity 0.5s'; } }
+    function lightEdge(eid) { const e = edgeEl(eid); if (!e) return; e.style.opacity = '0.35'; e.style.strokeWidth = '1.5'; e.style.transition = 'opacity 0.3s, stroke-width 0.3s'; }
+    function dimEdge(eid) { const e = edgeEl(eid); if (!e) return; e.style.opacity = '0.02'; e.style.strokeWidth = '0.4'; e.style.transition = 'opacity 0.5s, stroke-width 0.3s'; }
+    function idleEdge(eid) { const e = edgeEl(eid); if (!e) return; e.style.opacity = e.getAttribute('opacity') || '0.08'; e.style.strokeWidth = ''; e.style.transition = 'opacity 0.5s, stroke-width 0.3s'; }
+    function setTilt(d) { if (beamGroup) beamGroup.style.transform = `rotate(${d}deg)`; }
+
+    function clearAnims() { timersRef.current.forEach(t => clearTimeout(t)); timersRef.current = []; if (animRef.current) { clearInterval(animRef.current); animRef.current = null; } }
+    function resetAll() {
+      clearAnims(); allNIds.forEach(id => idleNode(id));
+      [...leftEIds, ...rightEIds, 'beam', 'cross'].forEach(id => idleEdge(id));
+      setTilt(0);
+      // Restore silver fills
+      leftNIds.forEach(nid => { const n = nodeEl(nid); if (n) { n.setAttribute('fill', `url(#${id}-gl)`); n.dataset.sparkMode = ''; } const g = glowEl(nid); if (g) g.setAttribute('fill', `url(#${id}-lg)`); });
+      leftEIds.forEach(eid => { const e = edgeEl(eid); if (e) { e.removeAttribute('style'); e.style.stroke = ''; } });
+    }
+
+    // STATE: IDLE
+    function stateIdle() {
+      resetAll();
+      const seq = ['fulcrum','l0','r0','l1','r1','l2','r2','l3','r3','l4','r4','l5','r5'];
+      let idx = 0;
+      const adj = {l0:['l1','l2'],l1:['l0','l2'],l2:['l0','l1','l3','l4'],l3:['l2','l5','l4'],l4:['l2','l5','l3'],l5:['l3','l4'],r0:['r1','r2'],r1:['r0','r2'],r2:['r0','r1','r3','r4'],r3:['r2','r5','r4'],r4:['r2','r5','r3'],r5:['r3','r4']};
+      function step() {
+        allNIds.forEach(nid => idleNode(nid));
+        const nid = seq[idx]; lightNode(nid, true);
+        (adj[nid] || []).forEach(a => { const n = nodeEl(a); if (n) { n.style.opacity = '0.6'; n.style.transition = 'opacity 0.4s'; } });
+        idx = (idx + 1) % seq.length;
+      }
+      step(); animRef.current = setInterval(step, 900);
+    }
+
+    // STATE: SCAN
+    function stateScan() {
+      resetAll();
+      const wave = ['l0','l1','r0','r1','l2','r2','l3','l4','r3','r4','l5','r5'];
+      let idx = 0;
+      function step() {
+        allNIds.forEach(nid => dimNode(nid));
+        [...leftEIds, ...rightEIds].forEach(eid => dimEdge(eid));
+        for (let i = 0; i < 3; i++) {
+          const ti = (idx - i + wave.length) % wave.length;
+          const nid = wave[ti], n = nodeEl(nid); if (!n) continue;
+          n.style.opacity = i === 0 ? '1' : i === 1 ? '0.5' : '0.2'; n.style.transition = 'opacity 0.12s';
+          const g = glowEl(nid); if (g && i === 0) { g.style.opacity = '0.6'; g.style.transition = 'opacity 0.12s'; } else if (g) { g.style.opacity = '0'; }
+          if (i === 0) lightNode(nid, true);
+        }
+        const curr = wave[idx];
+        if (curr.startsWith('l')) leftEIds.forEach(eid => lightEdge(eid)); else rightEIds.forEach(eid => lightEdge(eid));
+        idx = (idx + 1) % wave.length;
+      }
+      step(); animRef.current = setInterval(step, 220);
+    }
+
+    // STATE: BIAS DETECTED (gold spark)
+    function stateBias() {
+      resetAll(); setTilt(-5);
+      rightNIds.forEach(nid => dimNode(nid)); rightEIds.forEach(eid => dimEdge(eid));
+      leftNIds.forEach((nid, i) => {
+        const t = setTimeout(() => {
+          const n = nodeEl(nid); if (n) { n.dataset.sparkMode = 'true'; n.setAttribute('fill', '#FBBF24'); }
+          const g = glowEl(nid); if (g) g.setAttribute('fill', `url(#${id}-sg)`);
+          lightNode(nid, true);
+        }, i * 180);
+        timersRef.current.push(t);
+      });
+      leftEIds.forEach(eid => { const e = edgeEl(eid); if (e) { e.style.stroke = '#FBBF24'; e.style.opacity = '0.3'; e.style.transition = 'opacity 0.3s, stroke 0.3s'; } });
+      const fp = () => { const n = nodeEl('fulcrum'); if (n) { n.dataset.sparkMode = 'true'; } lightNode('fulcrum', true); const t = setTimeout(() => idleNode('fulcrum'), 500); timersRef.current.push(t); };
+      fp(); animRef.current = setInterval(fp, 1200);
+    }
+
+    // STATE: ENFORCE (rebalance)
+    function stateEnforce() {
+      resetAll(); setTilt(-5);
+      allNIds.forEach(nid => dimNode(nid));
+      [...leftEIds, ...rightEIds].forEach(eid => dimEdge(eid));
+      const seq = [{n:'fulcrum',d:0},{n:'l0',d:250},{n:'r0',d:450},{n:'l1',d:650},{n:'r1',d:850},{n:'l2',d:1050,tilt:-3},{n:'r2',d:1250,tilt:-1},{n:'l3',d:1450},{n:'r3',d:1600},{n:'l4',d:1750,tilt:0},{n:'r4',d:1900},{n:'l5',d:2050},{n:'r5',d:2200,tilt:0}];
+      seq.forEach(({ n: nid, d, tilt }) => {
+        const t = setTimeout(() => {
+          lightNode(nid, true);
+          const t2 = setTimeout(() => { const nd = nodeEl(nid); if (nd) { nd.style.opacity = '0.75'; nd.style.transition = 'opacity 0.5s'; } const g = glowEl(nid); if (g) { g.style.opacity = '0.15'; g.style.transition = 'opacity 0.8s'; } }, 450);
+          timersRef.current.push(t2);
+          if (tilt !== undefined) setTilt(tilt);
+        }, d);
+        timersRef.current.push(t);
+      });
+      const t = setTimeout(() => { [...leftEIds, ...rightEIds, 'beam', 'cross'].forEach(eid => { const e = edgeEl(eid); if (!e) return; e.style.opacity = '0.15'; e.style.transition = 'opacity 1s'; }); }, 2500);
+      timersRef.current.push(t);
+      const t3 = setTimeout(() => stateEnforce(), 4800);
+      timersRef.current.push(t3);
+    }
+
+    const states = [stateIdle, stateScan, stateBias, stateEnforce];
+    let stateIdx = 0;
+    states[0](); if (onPhaseChange) onPhaseChange(0);
+    const cycleTimer = setInterval(() => { stateIdx = (stateIdx + 1) % 4; states[stateIdx](); if (onPhaseChange) onPhaseChange(stateIdx); }, 4500);
+
+    return () => { clearAnims(); clearInterval(cycleTimer); };
+  }, [animate, id]);
+
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg ref={svgRef} width={size} height={size * 240 / 280} viewBox="0 0 280 240" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id={`${id}-light`} x1="6" y1="16" x2="24" y2="38"><stop offset="0%" stopColor="#D1D8E3" /><stop offset="100%" stopColor="#A0ABBE" /></linearGradient>
-        <linearGradient id={`${id}-dark`} x1="42" y1="16" x2="24" y2="38"><stop offset="0%" stopColor="#6B7A90" /><stop offset="100%" stopColor="#4A5568" /></linearGradient>
-        <linearGradient id={`${id}-bottom`} x1="6" y1="38" x2="42" y2="48"><stop offset="0%" stopColor="#3D4756" /><stop offset="100%" stopColor="#2A3240" /></linearGradient>
-        <linearGradient id={`${id}-silver`} x1="0" y1="0" x2="48" y2="48"><stop offset="0%" stopColor="#E8ECF1" /><stop offset="40%" stopColor="#C4CCD8" /><stop offset="100%" stopColor="#8A95A8" /></linearGradient>
-        <linearGradient id={`${id}-check`} x1="16" y1="18" x2="34" y2="32"><stop offset="0%" stopColor="#FFFFFF" /><stop offset="100%" stopColor="#E0E5EC" /></linearGradient>
-        <filter id={`${id}-glow`}><feGaussianBlur stdDeviation="1.5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+        <linearGradient id={`${id}-gm`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#E4E4E7"/><stop offset="40%" stopColor="#A1A1AA"/><stop offset="100%" stopColor="#52525B"/></linearGradient>
+        <linearGradient id={`${id}-gc`} x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#71717A"/><stop offset="50%" stopColor="#D4D4D8"/><stop offset="100%" stopColor="#71717A"/></linearGradient>
+        <linearGradient id={`${id}-gl`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#E4E4E7"/><stop offset="100%" stopColor="#A1A1AA"/></linearGradient>
+        <linearGradient id={`${id}-gr`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#A1A1AA"/><stop offset="100%" stopColor="#52525B"/></linearGradient>
+        <radialGradient id={`${id}-lg`}><stop offset="0%" stopColor="#E4E4E7" stopOpacity="0.35"/><stop offset="100%" stopColor="#E4E4E7" stopOpacity="0"/></radialGradient>
+        <radialGradient id={`${id}-rg`}><stop offset="0%" stopColor="#A1A1AA" stopOpacity="0.3"/><stop offset="100%" stopColor="#A1A1AA" stopOpacity="0"/></radialGradient>
+        <radialGradient id={`${id}-sg`}><stop offset="0%" stopColor="#FBBF24" stopOpacity="0.5"/><stop offset="100%" stopColor="#FBBF24" stopOpacity="0"/></radialGradient>
       </defs>
-      <path d="M6 16L24 6L24 28L6 38Z" fill={`url(#${id}-light)`} opacity="0.35" />
-      <path d="M6 16L24 6L24 28L6 38Z" stroke={`url(#${id}-silver)`} strokeWidth="1" fill="none" opacity="0.6" />
-      <path d="M42 16L24 6L24 28L42 38Z" fill={`url(#${id}-dark)`} opacity="0.25" />
-      <path d="M42 16L24 6L24 28L42 38Z" stroke={`url(#${id}-silver)`} strokeWidth="1" fill="none" opacity="0.4" />
-      <path d="M6 38L24 28L42 38L24 48Z" fill={`url(#${id}-bottom)`} opacity="0.3" />
-      <path d="M6 38L24 28L42 38L24 48Z" stroke={`url(#${id}-silver)`} strokeWidth="1" fill="none" opacity="0.5" />
-      <line x1="24" y1="6" x2="24" y2="28" stroke="#E8ECF1" strokeWidth="0.5" opacity="0.4" />
-      <line x1="6" y1="38" x2="24" y2="48" stroke="#8A95A8" strokeWidth="0.5" opacity="0.3" />
-      <line x1="42" y1="38" x2="24" y2="48" stroke="#6B7A90" strokeWidth="0.5" opacity="0.3" />
-      <path d="M16 26L22 32L34 18" stroke={`url(#${id}-check)`} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" filter={`url(#${id}-glow)`} />
+      <style>{`@keyframes pulseRing { 0% { r: 5; opacity: 0.5; } 100% { r: 22; opacity: 0; } }`}</style>
+      <g className="beam-group" style={{ transformOrigin: "140px 68px", transition: "transform 1s cubic-bezier(0.22,1,0.36,1)" }}>
+        <line x1="46" y1="68" x2="234" y2="68" stroke={`url(#${id}-gc)`} strokeWidth="1.8" strokeLinecap="round" opacity="0.3" data-edge="beam" />
+        <line x1="140" y1="24" x2="140" y2="68" stroke={`url(#${id}-gm)`} strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+        <polygon points="140,12 152,24 140,36 128,24" fill={`url(#${id}-gm)`} stroke="#D4D4D8" strokeWidth="0.5" data-node="fulcrum" opacity="0.9" />
+        <circle cx="140" cy="68" r="5" fill="#09090B" stroke={`url(#${id}-gm)`} strokeWidth="1.5" />
+        <g className="pulse-container" />
+        {/* Left cluster */}
+        <line x1="62" y1="68" x2="48" y2="92" stroke="#A1A1AA" strokeWidth="0.8" opacity="0.15" data-edge="l-sus1" />
+        <line x1="82" y1="68" x2="96" y2="92" stroke="#A1A1AA" strokeWidth="0.8" opacity="0.15" data-edge="l-sus2" />
+        {[[48,96,96,96,"l-e1"],[48,96,72,120,"l-e2"],[96,96,72,120,"l-e3"],[72,120,44,146,"l-e4"],[72,120,100,146,"l-e5"],[44,146,72,170,"l-e6"],[100,146,72,170,"l-e7"],[44,146,100,146,"l-e8"]].map(([x1,y1,x2,y2,eid]) => (
+          <line key={eid} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#A1A1AA" strokeWidth="0.7" opacity={eid.includes('6')||eid.includes('7')||eid.includes('8')?"0.04":"0.08"} data-edge={eid} />
+        ))}
+        {leftNodes.map(([cx,cy,r,op], i) => (
+          <React.Fragment key={`l${i}`}>
+            <circle cx={cx} cy={cy} r={r*2.5} fill={`url(#${id}-lg)`} data-glow={`l${i}`} opacity="0" />
+            <circle cx={cx} cy={cy} r={r} fill={`url(#${id}-gl)`} data-node={`l${i}`} data-side="left" opacity={op} />
+          </React.Fragment>
+        ))}
+        {/* Right cluster */}
+        <line x1="198" y1="68" x2="184" y2="92" stroke="#71717A" strokeWidth="0.8" opacity="0.15" data-edge="r-sus1" />
+        <line x1="218" y1="68" x2="232" y2="92" stroke="#71717A" strokeWidth="0.8" opacity="0.15" data-edge="r-sus2" />
+        {[[184,96,232,96,"r-e1"],[184,96,208,120,"r-e2"],[232,96,208,120,"r-e3"],[208,120,180,146,"r-e4"],[208,120,236,146,"r-e5"],[180,146,208,170,"r-e6"],[236,146,208,170,"r-e7"],[180,146,236,146,"r-e8"]].map(([x1,y1,x2,y2,eid]) => (
+          <line key={eid} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#71717A" strokeWidth={eid.includes('6')||eid.includes('7')||eid.includes('8')?"0.6":"0.7"} opacity={eid.includes('6')||eid.includes('7')||eid.includes('8')?"0.04":"0.08"} data-edge={eid} />
+        ))}
+        {rightNodes.map(([cx,cy,r,op], i) => (
+          <React.Fragment key={`r${i}`}>
+            <circle cx={cx} cy={cy} r={r*2.5} fill={`url(#${id}-rg)`} data-glow={`r${i}`} opacity="0" />
+            <circle cx={cx} cy={cy} r={r} fill={`url(#${id}-gr)`} data-node={`r${i}`} data-side="right" opacity={op} />
+          </React.Fragment>
+        ))}
+        <line x1="72" y1="170" x2="208" y2="170" stroke={`url(#${id}-gc)`} strokeWidth="0.5" opacity="0.04" strokeDasharray="3 8" data-edge="cross" />
+      </g>
     </svg>
   );
 }
 
-function BiasOpsIcon({ size = 20 }) {
+/* ─── BiasOps Icon (v5 Silver with rounded square container) ─── */
+let iconC = 0;
+function BiasOpsIcon({ size = 28 }) {
+  const [iid] = useState(() => `ico-${++iconC}`);
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
-      <path d="M6 16L24 6L24 28L6 38Z" fill="#C4CCD8" opacity="0.35" />
-      <path d="M42 16L24 6L24 28L42 38Z" fill="#6B7A90" opacity="0.25" />
-      <path d="M6 38L24 28L42 38L24 48Z" fill="#3D4756" opacity="0.3" />
-      <path d="M16 26L22 32L34 18" stroke="#E8ECF1" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
+      <defs>
+        <linearGradient id={`${iid}-gm`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#E4E4E7"/><stop offset="40%" stopColor="#A1A1AA"/><stop offset="100%" stopColor="#52525B"/></linearGradient>
+        <linearGradient id={`${iid}-gc`} x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#71717A"/><stop offset="50%" stopColor="#D4D4D8"/><stop offset="100%" stopColor="#71717A"/></linearGradient>
+        <linearGradient id={`${iid}-gl`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#E4E4E7"/><stop offset="100%" stopColor="#A1A1AA"/></linearGradient>
+        <linearGradient id={`${iid}-gr`} x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#A1A1AA"/><stop offset="100%" stopColor="#52525B"/></linearGradient>
+      </defs>
+      {/* Silver rounded square container */}
+      <rect x="3" y="3" width="58" height="58" rx="14" fill="none" stroke={`url(#${iid}-gm)`} strokeWidth="1" opacity="0.35" />
+      {/* Diamond fulcrum */}
+      <polygon points="32,9 36,14 32,19 28,14" fill={`url(#${iid}-gm)`} stroke="#D4D4D8" strokeWidth="0.3" opacity="0.9" />
+      {/* Stem */}
+      <line x1="32" y1="19" x2="32" y2="25" stroke={`url(#${iid}-gm)`} strokeWidth="1.2" opacity="0.4" />
+      {/* Beam */}
+      <line x1="14" y1="25" x2="50" y2="25" stroke={`url(#${iid}-gc)`} strokeWidth="1.2" opacity="0.35" />
+      {/* Left suspension */}
+      <line x1="19" y1="25" x2="18" y2="31" stroke="#A1A1AA" strokeWidth="0.6" opacity="0.2" />
+      <line x1="27" y1="25" x2="28" y2="31" stroke="#A1A1AA" strokeWidth="0.6" opacity="0.2" />
+      {/* Left nodes */}
+      <circle cx="18" cy="32" r="3" fill={`url(#${iid}-gl)`} opacity="0.85" />
+      <circle cx="28" cy="32" r="3" fill={`url(#${iid}-gl)`} opacity="0.85" />
+      <circle cx="23" cy="40" r="2.5" fill={`url(#${iid}-gl)`} opacity="0.5" />
+      <circle cx="23" cy="49" r="2" fill={`url(#${iid}-gl)`} opacity="0.3" />
+      {/* Left edges */}
+      <line x1="18" y1="35" x2="23" y2="40" stroke="#A1A1AA" strokeWidth="0.5" opacity="0.12" />
+      <line x1="28" y1="35" x2="23" y2="40" stroke="#A1A1AA" strokeWidth="0.5" opacity="0.12" />
+      <line x1="23" y1="42.5" x2="23" y2="47" stroke="#A1A1AA" strokeWidth="0.4" opacity="0.08" />
+      {/* Right suspension */}
+      <line x1="37" y1="25" x2="36" y2="31" stroke="#71717A" strokeWidth="0.6" opacity="0.2" />
+      <line x1="45" y1="25" x2="46" y2="31" stroke="#71717A" strokeWidth="0.6" opacity="0.2" />
+      {/* Right nodes */}
+      <circle cx="36" cy="32" r="3" fill={`url(#${iid}-gr)`} opacity="0.75" />
+      <circle cx="46" cy="32" r="3" fill={`url(#${iid}-gr)`} opacity="0.75" />
+      <circle cx="41" cy="40" r="2.5" fill={`url(#${iid}-gr)`} opacity="0.4" />
+      <circle cx="41" cy="49" r="2" fill={`url(#${iid}-gr)`} opacity="0.25" />
+      {/* Right edges */}
+      <line x1="36" y1="35" x2="41" y2="40" stroke="#71717A" strokeWidth="0.5" opacity="0.12" />
+      <line x1="46" y1="35" x2="41" y2="40" stroke="#71717A" strokeWidth="0.5" opacity="0.12" />
+      <line x1="41" y1="42.5" x2="41" y2="47" stroke="#71717A" strokeWidth="0.4" opacity="0.08" />
+      {/* Fairness link */}
+      <line x1="23" y1="49" x2="41" y2="49" stroke={`url(#${iid}-gc)`} strokeWidth="0.4" opacity="0.1" strokeDasharray="2 3" />
     </svg>
   );
 }
@@ -102,7 +311,7 @@ function CinematicIntro({ onComplete }) {
   return (
     <div style={{
       position: "fixed", inset: 0, zIndex: 9999,
-      background: "#08090C",
+      background: "#09090B",
       display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column",
       transition: "opacity 0.6s ease-out, transform 0.6s ease-out",
       opacity: phase >= 2 ? 0 : 1,
@@ -125,8 +334,16 @@ function CinematicIntro({ onComplete }) {
         transition: "all 0.8s cubic-bezier(0.16,1,0.3,1)",
         transform: phase >= 1 ? "scale(1) translateY(-12px)" : "scale(1.3)",
         opacity: phase >= 1 ? 1 : 0.7,
+        position: "relative",
       }}>
-        <BiasOpsLogo size={80} />
+        <div style={{
+          position: "absolute", width: 260, height: 260,
+          top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(228,228,231,0.18) 0%, transparent 70%)",
+          opacity: 0.7, pointerEvents: "none",
+        }} />
+        <BiasOpsLogo size={200} animate />
       </div>
       {/* Text reveal */}
       <div style={{
@@ -136,14 +353,14 @@ function CinematicIntro({ onComplete }) {
         transform: phase >= 1 ? "translateY(0)" : "translateY(16px)",
         textAlign: "center",
       }}>
-        <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 800, color: "#ECEFF4", letterSpacing: -1.5 }}>
-          Bias<span style={{ color: "#C4CCD8" }}>Ops</span>
+        <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 800, color: "#A1A1AA", letterSpacing: -1.5 }}>
+          Bias<span style={{ color: "#71717A", fontWeight: 600 }}>Ops</span>
         </div>
         <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: "#6C7690", marginTop: 8, letterSpacing: 2 }}>
           SCANNING FOR BIAS IN YOUR PIPELINE
         </div>
         {/* Loading bar */}
-        <div style={{ marginTop: 16, width: 200, height: 2, background: "#1F2330", borderRadius: 1, overflow: "hidden" }}>
+        <div style={{ marginTop: 16, width: 200, height: 2, background: "#141418", borderRadius: 1, overflow: "hidden" }}>
           <div style={{
             height: "100%", borderRadius: 1,
             background: "linear-gradient(90deg, #C4CCD8, #E0E5EC)",
@@ -181,7 +398,7 @@ function HeroCard({ name, org, action, checks, delay = 0, env }) {
 
   return (
     <div style={{
-      background: "#0F1114", border: "1px solid #1F2330", borderRadius: 16,
+      background: "#0F0F12", border: "1px solid #141418", borderRadius: 16,
       padding: 20, width: 340, flexShrink: 0,
       opacity: started ? 1 : 0, transform: started ? "translateY(0)" : "translateY(20px)",
       transition: "all 0.7s cubic-bezier(0.16,1,0.3,1)",
@@ -190,7 +407,7 @@ function HeroCard({ name, org, action, checks, delay = 0, env }) {
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
         <div style={{
           width: 32, height: 32, borderRadius: "50%",
-          background: "linear-gradient(135deg, #2A2E3D, #3A3F52)", display: "flex", alignItems: "center", justifyContent: "center",
+          background: "linear-gradient(135deg, #18181B, #3A3F52)", display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 13, fontWeight: 700, color: "#C4CCD8",
         }}>{name[0]}</div>
         <div>
@@ -207,7 +424,7 @@ function HeroCard({ name, org, action, checks, delay = 0, env }) {
       {/* Org badge */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12,
-        padding: "8px 12px", background: "#16181D", borderRadius: 8, border: "1px solid #1F2330",
+        padding: "8px 12px", background: "#111114", borderRadius: 8, border: "1px solid #141418",
       }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: "#E0E5EC" }}>{org}</span>
         <span style={{ fontSize: 11, color: "#6C7690" }}>
@@ -225,7 +442,7 @@ function HeroCard({ name, org, action, checks, delay = 0, env }) {
             }}>
               <div style={{
                 width: 8, height: 8, borderRadius: "50%",
-                background: resolved ? statusColor(c.status) : "#2A2E3D",
+                background: resolved ? statusColor(c.status) : "#18181B",
                 boxShadow: resolved ? `0 0 6px ${statusColor(c.status)}40` : "none",
                 transition: "all 0.3s",
               }} />
@@ -272,11 +489,11 @@ function ProductSection({ tag, title, desc, children, reverse = false, links = [
               <a key={i} href={href} style={{
                 fontSize: 13, fontWeight: 600, color: "#C4CCD8", textDecoration: "none",
                 display: "flex", alignItems: "center", gap: 6,
-                padding: "8px 16px", borderRadius: 8, border: "1px solid #2A2E3D",
+                padding: "8px 16px", borderRadius: 8, border: "1px solid #18181B",
                 transition: "all 0.2s",
               }}
               onMouseEnter={e => { e.target.style.borderColor = "#C4CCD8"; e.target.style.color = "#E0E5EC"; }}
-              onMouseLeave={e => { e.target.style.borderColor = "#2A2E3D"; e.target.style.color = "#C4CCD8"; }}
+              onMouseLeave={e => { e.target.style.borderColor = "#18181B"; e.target.style.color = "#C4CCD8"; }}
               >{label} →</a>
             );
           })}
@@ -298,11 +515,11 @@ function SpotlightCard({ children, style = {} }) {
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
       style={{
         padding: 1, borderRadius: 16,
-        background: hovered ? `radial-gradient(300px circle at ${mouse.x}px ${mouse.y}px, rgba(196,204,216,0.25), #2A2E3D 50%, #1F2330)` : "#1F2330",
+        background: hovered ? `radial-gradient(300px circle at ${mouse.x}px ${mouse.y}px, rgba(196,204,216,0.25), #18181B 50%, #141418)` : "#141418",
         transition: "background 0.15s", ...style,
       }}>
       <div style={{
-        background: "#0F1114", borderRadius: 15, padding: 24, height: "100%",
+        background: "#0F0F12", borderRadius: 15, padding: 24, height: "100%",
         position: "relative", overflow: "hidden",
       }}>
         <div style={{
@@ -333,12 +550,12 @@ function YamlBlock() {
   ];
   return (
     <div style={{
-      borderRadius: 16, overflow: "hidden", border: "1px solid #1F2330",
-      background: "#0A0C10", maxWidth: 520, boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+      borderRadius: 16, overflow: "hidden", border: "1px solid #141418",
+      background: "#0A0A0D", maxWidth: 520, boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
     }}>
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "10px 16px", borderBottom: "1px solid #1F2330",
+        padding: "10px 16px", borderBottom: "1px solid #141418",
       }}>
         <div style={{ display: "flex", gap: 6 }}>
           <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#FF5F57" }} />
@@ -374,10 +591,10 @@ function DashboardMini() {
   const dot = s => s === "pass" ? "#28C840" : s === "fail" ? "#FF5F57" : "#F5A623";
   return (
     <div style={{
-      borderRadius: 16, overflow: "hidden", border: "1px solid #1F2330",
-      background: "#0F1114", boxShadow: "0 24px 80px rgba(0,0,0,0.5)",
+      borderRadius: 16, overflow: "hidden", border: "1px solid #141418",
+      background: "#0F0F12", boxShadow: "0 24px 80px rgba(0,0,0,0.5)",
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", borderBottom: "1px solid #1F2330" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", borderBottom: "1px solid #141418" }}>
         <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#FF5F57" }} />
         <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#F5A623" }} />
         <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#28C840" }} />
@@ -386,7 +603,7 @@ function DashboardMini() {
       <div style={{ padding: 16 }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginBottom: 16 }}>
           {[{ l: "Models", v: "4" }, { l: "Policies", v: "10" }, { l: "Checks", v: "23" }, { l: "Score", v: "73.9%" }].map(s => (
-            <div key={s.l} style={{ background: "#16181D", borderRadius: 10, padding: "10px 12px", border: "1px solid #1F2330" }}>
+            <div key={s.l} style={{ background: "#111114", borderRadius: 10, padding: "10px 12px", border: "1px solid #141418" }}>
               <div style={{ fontSize: 9, color: "#6C7690", textTransform: "uppercase", letterSpacing: 1 }}>{s.l}</div>
               <div style={{ fontSize: 18, fontWeight: 800, color: "#E0E5EC", fontFamily: "'IBM Plex Mono', monospace", marginTop: 4 }}>{s.v}</div>
             </div>
@@ -395,7 +612,7 @@ function DashboardMini() {
         {checks.map((c, i) => (
           <div key={i} style={{
             display: "flex", alignItems: "center", gap: 8, padding: "8px 0",
-            borderTop: i > 0 ? "1px solid #1F233060" : "none",
+            borderTop: i > 0 ? "1px solid #14141860" : "none",
           }}>
             <div style={{ width: 7, height: 7, borderRadius: "50%", background: dot(c.status), boxShadow: `0 0 6px ${dot(c.status)}30` }} />
             <span style={{ fontSize: 12, color: "#C4CCD8", flex: 1 }}>{c.name}</span>
@@ -427,7 +644,7 @@ function ComplianceMini() {
         <div key={i} style={{
           display: "flex", alignItems: "center", gap: 10,
           padding: "12px 14px", borderRadius: 12,
-          background: "#0F1114", border: "1px solid #1F2330",
+          background: "#0F0F12", border: "1px solid #141418",
           opacity: item.status === "soon" ? 0.5 : 1,
         }}>
           <span style={{ fontSize: 16 }}>{item.icon}</span>
@@ -462,12 +679,12 @@ function AgenticPipeline() {
           }} />
           <div style={{
             flex: 1, padding: "12px 16px", borderRadius: 10,
-            background: "#16181D", border: "1px solid #1F2330",
+            background: "#111114", border: "1px solid #141418",
             fontSize: 13, fontWeight: 600, color: "#E0E5EC",
             fontFamily: "'IBM Plex Mono', monospace",
           }}>{s.label}</div>
           {i < steps.length - 1 && (
-            <div style={{ position: "absolute", left: 20, marginTop: 36, width: 1, height: 8, background: "#2A2E3D" }} />
+            <div style={{ position: "absolute", left: 20, marginTop: 36, width: 1, height: 8, background: "#18181B" }} />
           )}
         </div>
       ))}
@@ -548,13 +765,13 @@ function FeatureCard({ num, title, desc, icon }) {
       style={{
         flex: "0 0 320px", scrollSnapAlign: "center", padding: 1, borderRadius: 18,
         background: hovered
-          ? `radial-gradient(320px circle at ${mouse.x}px ${mouse.y}px, rgba(196,204,216,0.3), #2A2E3D 50%, #1F2330)`
-          : "#1F2330",
+          ? `radial-gradient(320px circle at ${mouse.x}px ${mouse.y}px, rgba(196,204,216,0.3), #18181B 50%, #141418)`
+          : "#141418",
         transform: hovered ? "translateY(-6px) scale(1.02)" : "translateY(0) scale(1)",
         transition: "transform 0.35s cubic-bezier(0.16,1,0.3,1), background 0.15s",
       }}
     >
-      <div style={{ borderRadius: 17, background: "#0F1114", padding: 28, minHeight: 220, position: "relative", overflow: "hidden" }}>
+      <div style={{ borderRadius: 17, background: "#0F0F12", padding: 28, minHeight: 220, position: "relative", overflow: "hidden" }}>
         {/* Spotlight glow */}
         <div style={{
           position: "absolute", inset: 0, pointerEvents: "none",
@@ -572,7 +789,7 @@ function FeatureCard({ num, title, desc, icon }) {
         }}>{num}</span>
         {/* Icon */}
         <div style={{
-          width: 46, height: 46, borderRadius: 12, background: "#16181D", border: "1px solid #2A2E3D",
+          width: 46, height: 46, borderRadius: 12, background: "#111114", border: "1px solid #18181B",
           display: "flex", alignItems: "center", justifyContent: "center",
           color: hovered ? "#E0E5EC" : "#C4CCD8", transition: "color 0.3s", marginBottom: 20,
         }}>{FeatureIcons[icon]}</div>
@@ -641,9 +858,9 @@ function FeaturesCarousel() {
     <div>
       <div style={{ position: "relative" }}>
         {/* Left fade */}
-        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, zIndex: 10, pointerEvents: "none", width: 80, background: "linear-gradient(to right, #08090C, transparent)" }} />
+        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, zIndex: 10, pointerEvents: "none", width: 80, background: "linear-gradient(to right, #09090B, transparent)" }} />
         {/* Right fade */}
-        <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, zIndex: 10, pointerEvents: "none", width: 80, background: "linear-gradient(to left, #08090C, transparent)" }} />
+        <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, zIndex: 10, pointerEvents: "none", width: 80, background: "linear-gradient(to left, #09090B, transparent)" }} />
         {/* Scroll container */}
         <div
           ref={scrollRef}
@@ -665,7 +882,7 @@ function FeaturesCarousel() {
           ref={trackRef}
           style={{
             position: "relative", width: "100%", maxWidth: 400, height: 4,
-            borderRadius: 2, backgroundColor: "#1F2330", cursor: "pointer",
+            borderRadius: 2, backgroundColor: "#141418", cursor: "pointer",
           }}
           onMouseDown={e => { setDragging(true); scrollTo(e.clientX); }}
           onTouchStart={e => { setDragging(true); scrollTo(e.touches[0].clientX); }}
@@ -749,9 +966,9 @@ function DataQualityMonitor() {
   const active = layers[activeLayer];
 
   return (
-    <div style={{ background: "#0F1114", border: "1px solid #1F2330", borderRadius: 16, overflow: "hidden", boxShadow: "0 24px 80px rgba(0,0,0,0.5)" }}>
+    <div style={{ background: "#0F0F12", border: "1px solid #141418", borderRadius: 16, overflow: "hidden", boxShadow: "0 24px 80px rgba(0,0,0,0.5)" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", borderBottom: "1px solid #1F2330" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", borderBottom: "1px solid #141418" }}>
         <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#FF5F57" }} />
         <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#F5A623" }} />
         <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#28C840" }} />
@@ -760,7 +977,7 @@ function DataQualityMonitor() {
 
       <div style={{ display: "flex", minHeight: 320 }}>
         {/* Pipeline stages sidebar */}
-        <div style={{ width: 200, borderRight: "1px solid #1F2330", padding: "12px 0", flexShrink: 0 }}>
+        <div style={{ width: 200, borderRight: "1px solid #141418", padding: "12px 0", flexShrink: 0 }}>
           <div style={{ padding: "0 12px 8px", fontSize: 10, color: "#3E4559", fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Pipeline stages</div>
           {layers.map((l, i) => (
             <div
@@ -769,7 +986,7 @@ function DataQualityMonitor() {
               style={{
                 display: "flex", alignItems: "center", gap: 8,
                 padding: "10px 12px", cursor: "pointer",
-                background: i === activeLayer ? "#16181D" : "transparent",
+                background: i === activeLayer ? "#111114" : "transparent",
                 borderLeft: i === activeLayer ? `2px solid ${dotColor(l.status)}` : "2px solid transparent",
                 transition: "all 0.15s",
               }}
@@ -794,7 +1011,7 @@ function DataQualityMonitor() {
                     transition: "opacity 0.2s",
                   }} />
                   {i < layers.length - 1 && (
-                    <div style={{ flex: 1, height: 2, background: "#1F2330", position: "relative" }}>
+                    <div style={{ flex: 1, height: 2, background: "#141418", position: "relative" }}>
                       <div style={{ position: "absolute", inset: 0, background: dotColor(layers[i+1].status), opacity: 0.3 }} />
                     </div>
                   )}
@@ -828,7 +1045,7 @@ function DataQualityMonitor() {
               <div key={i} style={{
                 display: "flex", alignItems: "center", gap: 10,
                 padding: "10px 12px", borderRadius: 8,
-                background: "#16181D", border: "1px solid #1F2330",
+                background: "#111114", border: "1px solid #141418",
               }}>
                 <div style={{
                   width: 7, height: 7, borderRadius: "50%",
@@ -883,7 +1100,7 @@ function TemplateCard({ title, desc, tags, href }) {
         {tags.map((t, i) => (
           <span key={i} style={{
             fontSize: 10, padding: "3px 8px", borderRadius: 4,
-            background: "#16181D", border: "1px solid #1F2330", color: "#C4CCD8",
+            background: "#111114", border: "1px solid #141418", color: "#C4CCD8",
           }}>{t}</span>
         ))}
       </div>
@@ -928,7 +1145,7 @@ function NavDropdown({ label, items }) {
       {open && (
         <div style={{
           position: "absolute", top: "calc(100% + 12px)", left: "50%", transform: "translateX(-50%)",
-          background: "#0F1114", border: "1px solid #1F2330", borderRadius: 14,
+          background: "#0F0F12", border: "1px solid #141418", borderRadius: 14,
           padding: 8, minWidth: 280, boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
           animation: "fadeIn 0.2s ease-out",
         }}>
@@ -941,7 +1158,7 @@ function NavDropdown({ label, items }) {
                 display: "block", padding: "10px 14px", borderRadius: 8,
                 transition: "background 0.15s", textDecoration: "none",
               }}
-              onMouseEnter={e => e.currentTarget.style.background = "#16181D"}
+              onMouseEnter={e => e.currentTarget.style.background = "#111114"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
               <div style={{ fontSize: 13, fontWeight: 600, color: "#E0E5EC", marginBottom: 2 }}>{item.text}</div>
@@ -960,6 +1177,8 @@ function NavDropdown({ label, items }) {
 export default function BiasOpsLanding() {
   const [introComplete, setIntroComplete] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+  const [heroPhase, setHeroPhase] = useState(0);
+  const [ctaPhase, setCtaPhase] = useState(0);
   const handleIntroComplete = useCallback(() => setIntroComplete(true), []);
 
   useEffect(() => {
@@ -970,7 +1189,7 @@ export default function BiasOpsLanding() {
 
   return (
     <div style={{
-      minHeight: "100vh", background: "#08090C", color: "#E0E5EC",
+      minHeight: "100vh", background: "#09090B", color: "#E0E5EC",
       fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
       position: "relative", overflowX: "hidden",
     }}>
@@ -978,11 +1197,11 @@ export default function BiasOpsLanding() {
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
-        body { background: #08090C; }
+        body { background: #09090B; }
         ::selection { background: rgba(196,204,216,0.25); color: #E0E5EC; }
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #08090C; }
-        ::-webkit-scrollbar-thumb { background: #1F2330; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #09090B; }
+        ::-webkit-scrollbar-thumb { background: #141418; border-radius: 3px; }
 
         @keyframes shimmer {
           0% { background-position: -200% center; }
@@ -1055,8 +1274,8 @@ export default function BiasOpsLanding() {
         transition: "all 0.6s cubic-bezier(0.16,1,0.3,1) 0.2s",
       }}>
         <a href="#top" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <BiasOpsLogo size={30} />
-          <span style={{ fontSize: 17, fontWeight: 700, letterSpacing: -0.3, color: "#E0E5EC" }}>BiasOps</span>
+          <BiasOpsIcon size={30} />
+          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.5, color: "#A1A1AA" }}>Bias<span style={{ color: "#71717A", fontWeight: 600 }}>Ops</span></span>
         </a>
         <div style={{ display: "flex", gap: 28, alignItems: "center" }}>
           {/* Products dropdown */}
@@ -1082,7 +1301,7 @@ export default function BiasOpsLanding() {
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <a href="https://app.biasops.ai/sign-in" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: "#B0B8C9" }}>Sign in</a>
           <a href="https://app.biasops.ai" target="_blank" rel="noopener noreferrer" style={{
-            fontSize: 13, fontWeight: 600, color: "#08090C", background: "#E0E5EC",
+            fontSize: 13, fontWeight: 600, color: "#09090B", background: "#E0E5EC",
             padding: "8px 20px", borderRadius: 99,
             transition: "background 0.2s",
           }}
@@ -1098,15 +1317,27 @@ export default function BiasOpsLanding() {
         maxWidth: 1200, margin: "0 auto", textAlign: "center",
       }}>
         <Reveal delay={200}>
-          <div className="float-anim" style={{ display: "inline-block", marginBottom: 24 }}>
-            <BiasOpsLogo size={80} />
+          <div style={{ display: "inline-block", marginBottom: 24, position: "relative" }}>
+            {/* Ambient glow - shifts to amber during bias detected (phase 2) */}
+            <div style={{
+              position: "absolute", width: 300, height: 300,
+              top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+              borderRadius: "50%",
+              background: heroPhase === 2
+                ? "radial-gradient(circle, rgba(251,191,36,0.22) 0%, transparent 65%)"
+                : "radial-gradient(circle, rgba(228,228,231,0.18) 0%, transparent 70%)",
+              opacity: heroPhase === 2 ? 0.9 : heroPhase === 1 ? 0.8 : 0.7,
+              transition: "background 0.8s ease, opacity 0.8s ease",
+              pointerEvents: "none",
+            }} />
+            <BiasOpsLogo size={260} animate onPhaseChange={setHeroPhase} />
           </div>
         </Reveal>
 
         <Reveal delay={350}>
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 8,
-            background: "#0F1114", border: "1px solid #2A2E3D", borderRadius: 99,
+            background: "#0F0F12", border: "1px solid #18181B", borderRadius: 99,
             padding: "6px 16px", fontSize: 13, color: "#B0B8C9", marginBottom: 28,
           }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#28C840", animation: "pulse 2s infinite" }} />
@@ -1138,7 +1369,7 @@ export default function BiasOpsLanding() {
         <Reveal delay={800}>
           <div style={{ marginTop: 32, display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
             <a href="https://app.biasops.ai" target="_blank" rel="noopener noreferrer" style={{
-              background: "#E0E5EC", color: "#08090C", fontWeight: 600,
+              background: "#E0E5EC", color: "#09090B", fontWeight: 600,
               padding: "14px 32px", borderRadius: 99, fontSize: 15,
               display: "inline-flex", alignItems: "center", gap: 8,
               transition: "all 0.2s",
@@ -1367,7 +1598,7 @@ export default function BiasOpsLanding() {
           <div style={{ textAlign: "center", marginTop: 32 }}>
             <div style={{
               display: "inline-block", padding: "12px 24px", borderRadius: 10,
-              background: "#0F1114", border: "1px solid #1F2330",
+              background: "#0F0F12", border: "1px solid #141418",
               fontFamily: "'IBM Plex Mono', monospace", fontSize: 14, color: "#C4CCD8",
             }}>
               $ biasops init --template fair-lending
@@ -1383,8 +1614,19 @@ export default function BiasOpsLanding() {
         textAlign: "center",
       }}>
         <Reveal>
-          <div className="float-anim" style={{ display: "inline-block", marginBottom: 20 }}>
-            <BiasOpsLogo size={56} />
+          <div style={{ display: "inline-block", marginBottom: 20, position: "relative" }}>
+            <div style={{
+              position: "absolute", width: 220, height: 220,
+              top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+              borderRadius: "50%",
+              background: ctaPhase === 2
+                ? "radial-gradient(circle, rgba(251,191,36,0.22) 0%, transparent 65%)"
+                : "radial-gradient(circle, rgba(228,228,231,0.18) 0%, transparent 70%)",
+              opacity: ctaPhase === 2 ? 0.9 : 0.7,
+              transition: "background 0.8s ease, opacity 0.8s ease",
+              pointerEvents: "none",
+            }} />
+            <BiasOpsLogo size={140} animate onPhaseChange={setCtaPhase} />
           </div>
         </Reveal>
         <Reveal delay={100}>
@@ -1401,7 +1643,7 @@ export default function BiasOpsLanding() {
         <Reveal delay={300}>
           <div style={{ marginTop: 32 }}>
             <a href="https://app.biasops.ai" target="_blank" rel="noopener noreferrer" style={{
-              background: "#E0E5EC", color: "#08090C", fontWeight: 700,
+              background: "#E0E5EC", color: "#09090B", fontWeight: 700,
               padding: "16px 40px", borderRadius: 99, fontSize: 17,
               display: "inline-flex", alignItems: "center", gap: 8,
               transition: "all 0.2s",
@@ -1430,8 +1672,8 @@ export default function BiasOpsLanding() {
           {/* Brand */}
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <BiasOpsIcon size={20} />
-              <span style={{ fontSize: 17, fontWeight: 700, color: "#E0E5EC" }}>BiasOps</span>
+              <BiasOpsIcon size={28} />
+              <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.5, color: "#A1A1AA" }}>Bias<span style={{ color: "#71717A", fontWeight: 600 }}>Ops</span></span>
             </div>
             <p style={{ fontSize: 13, color: "#6C7690", lineHeight: 1.7, maxWidth: 260 }}>
               Compliance infrastructure for ML pipelines. Built for regulated industries adopting AI at scale.
@@ -1480,14 +1722,14 @@ export default function BiasOpsLanding() {
             {[
               { text: "Documentation", href: "#" },
               { text: "Blog", href: "#" },
-              { text: "GitHub", href: "https://github.com/sksvineeth/biasops-policy-marketplace", icon: <Github className="w-3 h-3" />, external: true },
+              { text: "GitHub", href: "https://github.com/sksvineeth/biasops-policy-marketplace" },
               { text: "API Reference", href: "#" },
               { text: "Changelog", href: "#" },
             ].map((l, j) => (
-              <a key={j} href={l.href} {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#6C7690", marginBottom: 9, transition: "color 0.2s" }}
+              <a key={j} href={l.href} {...(l.text === "GitHub" ? { target: "_blank", rel: "noopener noreferrer" } : {})} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: "#6C7690", marginBottom: 9, transition: "color 0.2s" }}
                 onMouseEnter={e => e.currentTarget.style.color = "#E0E5EC"}
                 onMouseLeave={e => e.currentTarget.style.color = "#6C7690"}
-              >{l.icon}{l.text}{l.external && <ExternalLink className="w-3 h-3" />}</a>
+              >{l.text === "GitHub" && <Github className="w-3 h-3" />}{l.text}{l.text === "GitHub" && <ExternalLink className="w-3 h-3" />}</a>
             ))}
           </div>
 
@@ -1496,14 +1738,14 @@ export default function BiasOpsLanding() {
             <div style={{ fontSize: 12, fontWeight: 600, color: "#B0B8C9", marginBottom: 16 }}>Company</div>
             {[
               { text: "About", href: "#" },
-              { text: "Contact", href: "mailto:Vineeth@biasops.ai", icon: <Mail className="w-3 h-3" /> },
-              { text: "LinkedIn", href: "https://www.linkedin.com/company/biasops", icon: <Linkedin className="w-3 h-3" />, external: true },
-              { text: "Vineeth@biasops.ai", href: "mailto:Vineeth@biasops.ai", icon: <Mail className="w-3 h-3" /> },
+              { text: "Contact", href: "mailto:Vineeth@biasops.ai" },
+              { text: "LinkedIn", href: "https://www.linkedin.com/company/biasops" },
+              { text: "Vineeth@biasops.ai", href: "mailto:Vineeth@biasops.ai" },
             ].map((l, j) => (
-              <a key={j} href={l.href} {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#6C7690", marginBottom: 9, transition: "color 0.2s" }}
+              <a key={j} href={l.href} {...(l.text === "LinkedIn" ? { target: "_blank", rel: "noopener noreferrer" } : {})} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: "#6C7690", marginBottom: 9, transition: "color 0.2s" }}
                 onMouseEnter={e => e.currentTarget.style.color = "#E0E5EC"}
                 onMouseLeave={e => e.currentTarget.style.color = "#6C7690"}
-              >{l.icon}{l.text}{l.external && <ExternalLink className="w-3 h-3" />}</a>
+              >{l.text === "LinkedIn" && <Linkedin className="w-3 h-3" />}{(l.text === "Contact" || l.text === "Vineeth@biasops.ai") && <Mail className="w-3 h-3" />}{l.text}{l.text === "LinkedIn" && <ExternalLink className="w-3 h-3" />}</a>
             ))}
           </div>
         </div>
