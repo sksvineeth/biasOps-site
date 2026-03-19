@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fair Lending Compliance · BiasOps</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#09090B;color:#E0E5EC}
+::selection{background:rgba(196,204,216,0.25);color:#E0E5EC}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#09090B}
+::-webkit-scrollbar-thumb{background:#141418;border-radius:3px}
+a{color:inherit;text-decoration:none}
+
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+.text-shimmer{
+  background:linear-gradient(135deg,#E8ECF1 0%,#8A95A8 40%,#4A5568 70%,#8A95A8 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:shimmer 4s linear infinite;
+}
+
+.noise{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.04;
+  background-image:linear-gradient(rgba(31,35,48,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(31,35,48,0.5) 1px,transparent 1px);
+  background-size:64px 64px}
+.glow-tl{position:fixed;top:-20%;left:-10%;width:60%;height:60%;z-index:0;pointer-events:none;border-radius:50%;opacity:0.07;
+  background:radial-gradient(circle,#C4CCD8 0%,transparent 70%)}
+
+nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  background:rgba(8,9,12,0.82);border-bottom:1px solid rgba(31,35,48,0.5);
+  height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 40px}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand span{font-size:18px;font-weight:800;letter-spacing:-0.5px}
+.nav-links{display:flex;gap:28px}
+.nav-links a{font-size:14px;color:#6C7690;transition:color 0.2s}
+.nav-links a:hover{color:#E0E5EC}
+.nav-cta{font-size:13px;font-weight:600;color:#09090B;background:#E0E5EC;padding:8px 20px;border-radius:99px;transition:background 0.2s}
+.nav-cta:hover{background:#C4CCD8}
+
+.hero{position:relative;z-index:1;padding:120px 40px 60px;max-width:900px;margin:0 auto;
+  animation:fadeIn 0.8s cubic-bezier(0.16,1,0.3,1) forwards}
+.breadcrumb{font-size:13px;color:#6C7690;margin-bottom:24px}
+.breadcrumb a{color:#8A95A8;transition:color 0.2s}
+.breadcrumb a:hover{color:#E0E5EC}
+.hero h1{font-size:clamp(36px,5vw,56px);font-weight:800;line-height:1.08;letter-spacing:-2.5px;color:#ECEFF4;margin-bottom:20px}
+.hero .subtitle{font-size:18px;color:#6C7690;line-height:1.7;max-width:680px;margin-bottom:32px}
+.hero .meta{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:#6C7690}
+.hero .meta span{display:flex;align-items:center;gap:6px}
+.dot{width:6px;height:6px;border-radius:50%;background:#28C840}
+
+.content{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 40px 80px}
+
+.scenario-card{background:#0F0F12;border:1px solid #141418;border-radius:16px;padding:28px;margin-bottom:48px;
+  border-left:3px solid #FF5F57}
+.scenario-card .label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#FF5F57;margin-bottom:8px}
+.scenario-card h3{font-size:20px;font-weight:700;color:#ECEFF4;margin-bottom:12px}
+.scenario-card p{font-size:15px;color:#6C7690;line-height:1.7}
+
+h2{font-size:28px;font-weight:800;color:#ECEFF4;letter-spacing:-1.5px;margin:56px 0 20px}
+h2:first-of-type{margin-top:0}
+p.body{font-size:15px;color:#6C7690;line-height:1.8;margin-bottom:20px}
+
+.policy-grid{display:flex;flex-direction:column;gap:12px;margin:24px 0 48px}
+.policy-card{background:#0F0F12;border:1px solid #141418;border-radius:14px;padding:22px;position:relative;overflow:hidden;
+  transition:border-color 0.2s}
+.policy-card:hover{border-color:#2A2E3D}
+.policy-card .top-line{position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(196,204,216,0.12),transparent)}
+.policy-card .severity{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  padding:3px 10px;border-radius:4px;margin-bottom:10px}
+.severity-critical{background:rgba(255,95,87,0.12);color:#FF5F57}
+.severity-high{background:rgba(245,166,35,0.12);color:#A1A1AA}
+.policy-card h4{font-size:16px;font-weight:700;color:#E0E5EC;margin-bottom:6px}
+.policy-card .regulation{font-size:12px;color:#8A95A8;font-family:'IBM Plex Mono',monospace;margin-bottom:10px}
+.policy-card .checks{display:flex;flex-direction:column;gap:4px}
+.policy-card .check{display:flex;align-items:center;gap:8px;font-size:13px;color:#6C7690}
+.policy-card .check::before{content:'';width:5px;height:5px;border-radius:50%;background:#C4CCD8;flex-shrink:0}
+
+.demo-flow{background:#0F0F12;border:1px solid #141418;border-radius:16px;overflow:hidden;margin:24px 0 48px}
+.demo-header{display:flex;align-items:center;gap:6px;padding:10px 16px;border-bottom:1px solid #141418}
+.demo-header span{width:10px;height:10px;border-radius:50%}
+.demo-header .title{margin-left:12px;font-size:11px;color:#3E4559;font-family:'IBM Plex Mono',monospace}
+.demo-body{padding:24px}
+
+.step{display:flex;gap:16px;margin-bottom:20px;align-items:flex-start}
+.step:last-child{margin-bottom:0}
+.step-num{width:32px;height:32px;border-radius:50%;background:#111114;border:1px solid #2A2E3D;
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#C4CCD8;
+  font-family:'IBM Plex Mono',monospace;flex-shrink:0}
+.step-content h5{font-size:14px;font-weight:600;color:#E0E5EC;margin-bottom:4px}
+.step-content p{font-size:13px;color:#6C7690;line-height:1.6}
+.step-time{font-size:11px;color:#3E4559;font-family:'IBM Plex Mono',monospace;margin-top:4px}
+
+.results-table{width:100%;border-collapse:collapse;margin:24px 0 48px}
+.results-table th{text-align:left;font-size:11px;color:#6C7690;font-weight:600;text-transform:uppercase;
+  letter-spacing:1px;padding:10px 14px;border-bottom:1px solid #141418}
+.results-table td{font-size:13px;padding:12px 14px;border-bottom:1px solid rgba(31,35,48,0.5);color:#C4CCD8}
+.results-table .status{display:flex;align-items:center;gap:6px}
+.results-table .dot-pass{width:7px;height:7px;border-radius:50%;background:#28C840}
+.results-table .dot-fail{width:7px;height:7px;border-radius:50%;background:#FF5F57}
+.results-table .dot-warn{width:7px;height:7px;border-radius:50%;background:#A1A1AA}
+
+.yaml-block{border-radius:14px;overflow:hidden;border:1px solid #141418;background:#0A0C10;margin:24px 0 48px;
+  box-shadow:0 16px 48px rgba(0,0,0,0.3)}
+.yaml-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #141418}
+.yaml-header .dots{display:flex;gap:6px}
+.yaml-header .dots span{width:10px;height:10px;border-radius:50%}
+.yaml-header .filename{font-size:11px;color:#3E4559;font-family:'IBM Plex Mono',monospace}
+.yaml-block pre{padding:18px 22px;font-size:13px;font-family:'IBM Plex Mono',monospace;line-height:1.7;overflow-x:auto}
+.yaml-key{color:#6C7690}
+.yaml-val{color:#C4CCD8}
+.yaml-num{color:#E0E5EC}
+
+.cta-section{text-align:center;padding:80px 0;border-top:1px solid rgba(31,35,48,0.5);margin-top:48px}
+.cta-section h2{font-size:36px;margin-bottom:16px}
+.cta-section p{font-size:16px;color:#6C7690;max-width:480px;margin:0 auto 28px}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:#E0E5EC;color:#09090B;font-weight:700;
+  padding:14px 32px;border-radius:99px;font-size:15px;transition:background 0.2s}
+.btn-primary:hover{background:#C4CCD8}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;border:1px solid #4A5568;color:#E0E5EC;font-weight:600;
+  padding:14px 32px;border-radius:99px;font-size:15px;transition:border-color 0.2s}
+.btn-ghost:hover{border-color:#C4CCD8}
+
+footer{position:relative;z-index:1;border-top:1px solid rgba(31,35,48,0.5);padding:40px;text-align:center;
+  font-size:12px;color:#3E4559}
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="grid-bg"></div>
+<div class="glow-tl"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-brand">
+    <svg width="30" height="30" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="nav-gm" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#E4E4E7"/><stop offset="40%" stop-color="#A1A1AA"/><stop offset="100%" stop-color="#52525B"/></linearGradient><linearGradient id="nav-gc" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#71717A"/><stop offset="50%" stop-color="#D4D4D8"/><stop offset="100%" stop-color="#71717A"/></linearGradient><linearGradient id="nav-gl" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#E4E4E7"/><stop offset="100%" stop-color="#A1A1AA"/></linearGradient><linearGradient id="nav-gr" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#A1A1AA"/><stop offset="100%" stop-color="#52525B"/></linearGradient></defs><rect x="3" y="3" width="58" height="58" rx="14" fill="none" stroke="url(#nav-gm)" stroke-width="1" opacity="0.35"/><polygon points="32,9 36,14 32,19 28,14" fill="url(#nav-gm)" stroke="#D4D4D8" stroke-width="0.3" opacity="0.9"/><line x1="32" y1="19" x2="32" y2="25" stroke="url(#nav-gm)" stroke-width="1.2" opacity="0.4"/><line x1="14" y1="25" x2="50" y2="25" stroke="url(#nav-gc)" stroke-width="1.2" opacity="0.35"/><line x1="19" y1="25" x2="18" y2="31" stroke="#A1A1AA" stroke-width="0.6" opacity="0.2"/><line x1="27" y1="25" x2="28" y2="31" stroke="#A1A1AA" stroke-width="0.6" opacity="0.2"/><circle cx="18" cy="32" r="3" fill="url(#nav-gl)" opacity="0.85"/><circle cx="28" cy="32" r="3" fill="url(#nav-gl)" opacity="0.85"/><circle cx="23" cy="40" r="2.5" fill="url(#nav-gl)" opacity="0.5"/><circle cx="23" cy="49" r="2" fill="url(#nav-gl)" opacity="0.3"/><line x1="18" y1="35" x2="23" y2="40" stroke="#A1A1AA" stroke-width="0.5" opacity="0.12"/><line x1="28" y1="35" x2="23" y2="40" stroke="#A1A1AA" stroke-width="0.5" opacity="0.12"/><line x1="37" y1="25" x2="36" y2="31" stroke="#71717A" stroke-width="0.6" opacity="0.2"/><line x1="45" y1="25" x2="46" y2="31" stroke="#71717A" stroke-width="0.6" opacity="0.2"/><circle cx="36" cy="32" r="3" fill="url(#nav-gr)" opacity="0.75"/><circle cx="46" cy="32" r="3" fill="url(#nav-gr)" opacity="0.75"/><circle cx="41" cy="40" r="2.5" fill="url(#nav-gr)" opacity="0.4"/><circle cx="41" cy="49" r="2" fill="url(#nav-gr)" opacity="0.25"/><line x1="36" y1="35" x2="41" y2="40" stroke="#71717A" stroke-width="0.5" opacity="0.12"/><line x1="46" y1="35" x2="41" y2="40" stroke="#71717A" stroke-width="0.5" opacity="0.12"/></svg>
+    <span style="color:#A1A1AA;font-weight:800">Bias<span style="color:#71717A;font-weight:600">Ops</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="/#product">Products</a>
+    <a href="/fair-lending.html" style="color:#E0E5EC">Fair Lending</a>
+    <a href="/llm-observability.html">LLM Compliance</a>
+    <a href="/contact.html">Contact</a>
+  </div>
+  <a href="/contact.html" class="nav-cta">Book a Demo</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="breadcrumb">
+    <a href="/">BiasOps</a> / <a href="/#marketplace">Use Cases</a> / <span style="color:#E0E5EC">Fair Lending Compliance</span>
+  </div>
+
+  <h1>
+    Fair Lending Compliance with <span class="text-shimmer">BiasOps</span>
+  </h1>
+
+  <p class="subtitle">
+    How a mid-size bank goes from deploying a credit scoring model to producing a full regulatory audit in under 4 minutes, with policies embedded in the pipeline from the start.
+  </p>
+
+  <div class="meta">
+    <span><span class="dot"></span> Live use case</span>
+    <span>5 federal regulations</span>
+    <span>23 automated checks</span>
+    <span>~4 min end-to-end</span>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- SCENARIO -->
+  <div class="scenario-card">
+    <div class="label">Real-world scenario</div>
+    <h3>Acme Bank · AI Credit Scoring Audit</h3>
+    <p>
+      Acme Bank deploys an XGBoost credit scoring model trained on 5 years of historical lending data. The model processes 10,000+ loan applications per quarter. Regulators want proof it does not discriminate across race, gender, and age, and that denial reasons are specific, not generic. Today that audit takes 6 weeks and $200K in consulting fees. With BiasOps, it takes 4 minutes.
+    </p>
+  </div>
+
+  <!-- WHY FAIR LENDING -->
+  <h2>Why fair lending is the highest-stakes AI compliance problem</h2>
+  <p class="body">
+    The AI lending market is projected to reach $2 trillion by 2037. Every bank and fintech deploying ML in credit decisions faces an overlapping web of federal regulations: ECOA, HMDA, CFPB guidance, OCC risk management, and the Fair Housing Act. The CFPB has made it clear: creditors cannot provide generic denial reasons for AI-driven decisions. They must give specific, individualized explanations.
+  </p>
+  <p class="body">
+    $89 million in US penalties have already been levied for AI lending discrimination. The question is not whether your model has bias. The question is whether you can prove it does not, on demand, with an audit trail regulators will accept.
+  </p>
+  <p class="body">
+    BiasOps does not bolt compliance on after deployment. It embeds policy checks directly into the ML pipeline, so every model prediction is validated against real regulatory thresholds before it reaches a customer.
+  </p>
+
+  <!-- 5 POLICIES -->
+  <h2>5 policies that ship with the fair lending pack</h2>
+  <p class="body">
+    Each policy maps directly to a published federal regulation. They're defined in YAML, version-controlled in Git, and enforced automatically in your pipeline.
+  </p>
+
+  <div class="policy-grid">
+
+    <div class="policy-card">
+      <div class="top-line"></div>
+      <span class="severity severity-critical">Critical</span>
+      <h4>ECOA Disparate Impact</h4>
+      <div class="regulation">ecoa-disparate-impact.yaml · Equal Credit Opportunity Act / Reg B</div>
+      <div class="checks">
+        <div class="check">Disparate impact ratio ≥ 0.80 (4/5ths rule) across race, sex, age, national origin</div>
+        <div class="check">Selection rate comparison across all protected classes</div>
+        <div class="check">Less discriminatory alternative (LDA) documentation required</div>
+      </div>
+    </div>
+
+    <div class="policy-card">
+      <div class="top-line"></div>
+      <span class="severity severity-critical">Critical</span>
+      <h4>HMDA Reporting Compliance</h4>
+      <div class="regulation">hmda-reporting-compliance.yaml · Home Mortgage Disclosure Act / Reg C</div>
+      <div class="checks">
+        <div class="check">HMDA data fields completeness (action taken, loan purpose, race, sex, income)</div>
+        <div class="check">Denial rate disparity across demographic groups</div>
+        <div class="check">Geographic lending pattern analysis for redlining detection</div>
+      </div>
+    </div>
+
+    <div class="policy-card">
+      <div class="top-line"></div>
+      <span class="severity severity-critical">Critical</span>
+      <h4>CFPB Adverse Action Notices</h4>
+      <div class="regulation">cfpb-adverse-action.yaml · CFPB Circular 2023-03</div>
+      <div class="checks">
+        <div class="check">Model must produce specific, individualized denial reasons, not generic buckets</div>
+        <div class="check">Adverse action reasons must map to actual model features</div>
+        <div class="check">Reason code specificity score ≥ 0.70</div>
+      </div>
+    </div>
+
+    <div class="policy-card">
+      <div class="top-line"></div>
+      <span class="severity severity-high">High</span>
+      <h4>SR 11-7 Model Risk Management</h4>
+      <div class="regulation">sr11-7-model-risk.yaml · OCC/Fed SR 11-7</div>
+      <div class="checks">
+        <div class="check">Model documentation completeness (model card, validation report, limitations)</div>
+        <div class="check">Independent validation evidence required</div>
+        <div class="check">Ongoing monitoring plan and change management controls documented</div>
+      </div>
+    </div>
+
+    <div class="policy-card">
+      <div class="top-line"></div>
+      <span class="severity severity-critical">Critical</span>
+      <h4>Fair Housing Act (Credit)</h4>
+      <div class="regulation">fair-housing-act-credit.yaml · Fair Housing Act</div>
+      <div class="checks">
+        <div class="check">Protected class proxy variable detection (ZIP code → race proxy)</div>
+        <div class="check">Redlining pattern detection in geographic lending data</div>
+        <div class="check">Feature importance audit for prohibited correlations</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DEMO FLOW -->
+  <h2>The 4-minute audit, step by step</h2>
+  <p class="body">
+    This is the exact flow you'd walk through to go from a freshly deployed credit model to a complete regulatory compliance report.
+  </p>
+
+  <div class="demo-flow">
+    <div class="demo-header">
+      <span style="background:#FF5F57"></span>
+      <span style="background:#A1A1AA"></span>
+      <span style="background:#28C840"></span>
+      <span class="title">app.biasops.dev · Acme Bank Workspace</span>
+    </div>
+    <div class="demo-body">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h5>Create workspace</h5>
+          <p>Sign in and create the "Acme Bank" organization. Invite your compliance team.</p>
+          <div class="step-time">~30 seconds</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h5>Upload your model</h5>
+          <p>Register "Credit Scoring Model v2" (XGBoost). BiasOps extracts feature names, model type, and metadata automatically.</p>
+          <div class="step-time">~30 seconds</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h5>Upload your dataset</h5>
+          <p>Attach an HMDA-format dataset: 10,000 loan applications with demographics, credit scores, income, and outcomes.</p>
+          <div class="step-time">~30 seconds</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h5>Install the Fair Lending policy pack</h5>
+          <p>One click from the Marketplace installs all 5 policies. Each maps to a specific regulation with pre-configured thresholds.</p>
+          <div class="step-time">~30 seconds</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h5>Create and run your audit workflow</h5>
+          <p>Name it "Q1 Fair Lending Audit", attach the model and all 5 policies. Click Run.</p>
+          <div class="step-time">~30 seconds</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <h5>Review results</h5>
+          <p>BiasOps executes all 23 checks asynchronously and returns a compliance scorecard with pass, fail, and warning statuses for every check.</p>
+          <div class="step-time">~30 seconds</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">7</div>
+        <div class="step-content">
+          <h5>Export your audit report</h5>
+          <p>Download a PDF audit report with findings, remediation steps, and policy references, ready for your compliance team or regulators.</p>
+          <div class="step-time">~10 seconds</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPECTED RESULTS -->
+  <h2>What the results look like</h2>
+  <p class="body">
+    A realistic audit will not be a clean pass, and that is the point. A demo where everything passes is not credible. BiasOps catches real issues and tells you exactly what to fix.
+  </p>
+
+  <table class="results-table">
+    <thead>
+      <tr>
+        <th>Policy check</th>
+        <th>Status</th>
+        <th>Threshold</th>
+        <th>Measured</th>
+        <th>Regulation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>ECOA Adverse Impact Ratio</td>
+        <td><span class="status"><span class="dot-pass"></span> Pass</span></td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#6C7690">≥ 0.80</td>
+        <td style="font-family:'IBM Plex Mono',monospace">0.847</td>
+        <td style="color:#6C7690">ECOA / Reg B</td>
+      </tr>
+      <tr>
+        <td>HMDA Reporting Completeness</td>
+        <td><span class="status"><span class="dot-pass"></span> Pass</span></td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#6C7690">≥ 95%</td>
+        <td style="font-family:'IBM Plex Mono',monospace">98.2%</td>
+        <td style="color:#6C7690">HMDA / Reg C</td>
+      </tr>
+      <tr>
+        <td>HMDA Denial Rate Disparity</td>
+        <td><span class="status"><span class="dot-fail"></span> Fail</span></td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#6C7690">≤ 1.50</td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#FF5F57">1.73</td>
+        <td style="color:#6C7690">HMDA / Reg C</td>
+      </tr>
+      <tr>
+        <td>CFPB Reason Code Specificity</td>
+        <td><span class="status"><span class="dot-fail"></span> Fail</span></td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#6C7690">≥ 0.70</td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#FF5F57">0.45</td>
+        <td style="color:#6C7690">CFPB 2023-03</td>
+      </tr>
+      <tr>
+        <td>SR 11-7 Documentation</td>
+        <td><span class="status"><span class="dot-warn"></span> Warning</span></td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#6C7690">Complete</td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#A1A1AA">No validation report</td>
+        <td style="color:#6C7690">OCC SR 11-7</td>
+      </tr>
+      <tr>
+        <td>CFPB Proxy Detection</td>
+        <td><span class="status"><span class="dot-pass"></span> Pass</span></td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#6C7690">< 0.10</td>
+        <td style="font-family:'IBM Plex Mono',monospace">0.042</td>
+        <td style="color:#6C7690">CFPB 2023-03</td>
+      </tr>
+      <tr>
+        <td>FHA ZIP Code Proxy</td>
+        <td><span class="status"><span class="dot-fail"></span> Fail</span></td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#6C7690">< 0.15</td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#FF5F57">0.38</td>
+        <td style="color:#6C7690">Fair Housing Act</td>
+      </tr>
+      <tr>
+        <td>SR 11-7 Explainability</td>
+        <td><span class="status"><span class="dot-pass"></span> Pass</span></td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#6C7690">≥ 0.90</td>
+        <td style="font-family:'IBM Plex Mono',monospace">0.94</td>
+        <td style="color:#6C7690">OCC SR 11-7</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="body">
+    Overall compliance score: <strong style="color:#A1A1AA;font-family:'IBM Plex Mono',monospace">72.9%</strong> with 2 failures, 1 warning, and 5 passes. Each failing check includes specific remediation steps: review denial reason generation logic, audit ZIP code feature for demographic proxy, and upload independent validation documentation.
+  </p>
+
+  <!-- POLICY YAML EXAMPLE -->
+  <h2>What a policy looks like in code</h2>
+  <p class="body">
+    This is the ECOA disparate impact policy, the centerpiece check in the fair lending pack. It lives in your repo, gets reviewed in pull requests, and enforces automatically on every deployment.
+  </p>
+
+  <div class="yaml-block">
+    <div class="yaml-header">
+      <div class="dots">
+        <span style="background:#FF5F57"></span>
+        <span style="background:#A1A1AA"></span>
+        <span style="background:#28C840"></span>
+      </div>
+      <span class="filename">policies/financial-services/ecoa-disparate-impact.yaml</span>
+    </div>
+    <pre>
+<span class="yaml-key">- check_id:</span> <span class="yaml-val">"ecoa_adverse_impact_ratio"</span>
+  <span class="yaml-key">name:</span> <span class="yaml-val">"ECOA Adverse Impact Ratio"</span>
+  <span class="yaml-key">regulation:</span> <span class="yaml-val">"ECOA / Reg B"</span>
+  <span class="yaml-key">metric:</span> <span class="yaml-val">"adverse_impact_ratio"</span>
+  <span class="yaml-key">threshold:</span> <span class="yaml-num">0.80</span>
+  <span class="yaml-key">operator:</span> <span class="yaml-val">">="</span>
+  <span class="yaml-key">protected_attributes:</span>
+    <span class="yaml-val">- "race"</span>
+    <span class="yaml-val">- "sex"</span>
+    <span class="yaml-val">- "age"</span>
+    <span class="yaml-val">- "national_origin"</span>
+  <span class="yaml-key">severity:</span> <span class="yaml-val">"critical"</span>
+  <span class="yaml-key">remediation:</span> <span class="yaml-val">"Review model features for disparate impact. Document less discriminatory alternatives."</span>
+  <span class="yaml-key">evidence_required:</span>
+    <span class="yaml-val">- "selection_rate_by_group"</span>
+    <span class="yaml-val">- "feature_importance_audit"</span>
+    <span class="yaml-val">- "lda_analysis"</span></pre>
+  </div>
+
+  <!-- BOTTOM LINE -->
+  <h2>The bottom line</h2>
+  <p class="body">
+    Fair lending compliance today costs banks $200K+ per model audit and takes 6 weeks. Most of that time is spent manually checking thresholds that should be automated and generating documentation that should be generated.
+  </p>
+  <p class="body">
+    BiasOps reduces that to 4 minutes. Not by cutting corners, but by embedding the same regulatory thresholds directly into the ML pipeline. The policies are code. The checks run automatically. The audit trail writes itself.
+  </p>
+  <p class="body">
+    That's not a patch after deployment. That's compliance as architecture.
+  </p>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>Ready to embed compliance in your pipeline?</h2>
+    <p>See how BiasOps handles fair lending compliance for your models. Design partners welcome.</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+      <a href="/contact.html" class="btn-primary">Book a Demo →</a>
+      <a href="https://github.com/sksvineeth/biasops-policy-marketplace" target="_blank" rel="noopener noreferrer" class="btn-ghost">View Policies on GitHub</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 BiasOps · Apache 2.0 Licensed</p>
+</footer>
+
+</body>
+</html>

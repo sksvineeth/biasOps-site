@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LLM Compliance Observability · BiasOps</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#09090B;color:#E0E5EC}
+::selection{background:rgba(196,204,216,0.25);color:#E0E5EC}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#09090B}
+::-webkit-scrollbar-thumb{background:#141418;border-radius:3px}
+a{color:inherit;text-decoration:none}
+
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:0.3}}
+
+.text-shimmer{
+  background:linear-gradient(135deg,#E8ECF1 0%,#8A95A8 40%,#4A5568 70%,#8A95A8 100%);
+  background-size:200% auto;-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;animation:shimmer 4s linear infinite}
+
+.noise{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.04;
+  background-image:linear-gradient(rgba(31,35,48,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(31,35,48,0.5) 1px,transparent 1px);
+  background-size:64px 64px}
+.glow-tl{position:fixed;top:-20%;left:-10%;width:60%;height:60%;z-index:0;pointer-events:none;border-radius:50%;opacity:0.07;
+  background:radial-gradient(circle,#C4CCD8 0%,transparent 70%)}
+
+nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  background:rgba(8,9,12,0.82);border-bottom:1px solid rgba(31,35,48,0.5);
+  height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 40px}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand span{font-size:18px;font-weight:800;letter-spacing:-0.5px}
+.nav-links{display:flex;gap:28px}
+.nav-links a{font-size:14px;color:#6C7690;transition:color 0.2s}
+.nav-links a:hover{color:#E0E5EC}
+.nav-cta{font-size:13px;font-weight:600;color:#09090B;background:#E0E5EC;padding:8px 20px;border-radius:99px;transition:background 0.2s}
+.nav-cta:hover{background:#C4CCD8}
+
+.hero{position:relative;z-index:1;padding:120px 40px 60px;max-width:900px;margin:0 auto;animation:fadeIn 0.8s cubic-bezier(0.16,1,0.3,1) forwards}
+.breadcrumb{font-size:13px;color:#6C7690;margin-bottom:24px}
+.breadcrumb a{color:#8A95A8;transition:color 0.2s}
+.breadcrumb a:hover{color:#E0E5EC}
+.hero h1{font-size:clamp(36px,5vw,52px);font-weight:800;line-height:1.08;letter-spacing:-2.5px;color:#ECEFF4;margin-bottom:20px}
+.hero .subtitle{font-size:18px;color:#6C7690;line-height:1.7;max-width:700px;margin-bottom:32px}
+.hero .meta{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:#6C7690}
+.hero .meta span{display:flex;align-items:center;gap:6px}
+.dot{width:6px;height:6px;border-radius:50%;background:#28C840}
+
+.content{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 40px 80px}
+
+h2{font-size:28px;font-weight:800;color:#ECEFF4;letter-spacing:-1.5px;margin:56px 0 20px}
+h2:first-of-type{margin-top:0}
+p.body{font-size:15px;color:#6C7690;line-height:1.8;margin-bottom:20px}
+p.body strong{color:#E0E5EC;font-weight:600}
+
+.scenario-card{background:#0F0F12;border:1px solid #141418;border-radius:16px;padding:28px;margin-bottom:48px;border-left:3px solid #A1A1AA}
+.scenario-card .label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#A1A1AA;margin-bottom:8px}
+.scenario-card h3{font-size:20px;font-weight:700;color:#ECEFF4;margin-bottom:12px}
+.scenario-card p{font-size:15px;color:#6C7690;line-height:1.7}
+
+.comparison{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:32px 0 48px}
+.comparison-col{background:#0F0F12;border:1px solid #141418;border-radius:14px;padding:22px}
+.comparison-col h4{font-size:13px;font-weight:600;color:#6C7690;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+.comparison-col.biasops{border-color:#2A2E3D}
+.comparison-col ul{list-style:none;padding:0}
+.comparison-col li{font-size:13px;color:#6C7690;padding:5px 0;display:flex;align-items:center;gap:8px}
+.comparison-col.biasops li{color:#C4CCD8}
+.comparison-col li::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.comparison-col.generic li::before{background:#3E4559}
+.comparison-col.biasops li::before{background:#28C840}
+
+.layer-section{margin:48px 0;padding:32px;background:#0F0F12;border:1px solid #141418;border-radius:16px;position:relative;overflow:hidden}
+.layer-section .top-line{position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(196,204,216,0.12),transparent)}
+.layer-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 12px;border-radius:6px;margin-bottom:14px}
+.layer-section h3{font-size:22px;font-weight:800;color:#ECEFF4;letter-spacing:-1px;margin-bottom:8px}
+.layer-section .layer-subtitle{font-size:14px;color:#8A95A8;font-style:italic;margin-bottom:18px}
+.layer-section .layer-problem{font-size:14px;color:#6C7690;line-height:1.7;margin-bottom:20px;padding:16px;background:#111114;border-radius:10px;border-left:2px solid #3E4559}
+.layer-section .layer-problem em{color:#C4CCD8;font-style:normal}
+.layer-solution{font-size:14px;color:#C4CCD8;line-height:1.7;margin-bottom:18px}
+.checks-grid{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.check-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#111114;border:1px solid #141418;border-radius:8px}
+.check-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.check-item span{font-size:13px;color:#C4CCD8}
+.check-item .threshold{font-size:11px;color:#3E4559;font-family:'IBM Plex Mono',monospace;margin-left:auto;flex-shrink:0}
+.layer-differentiator{font-size:13px;color:#6C7690;padding:12px 14px;background:rgba(196,204,216,0.03);border-radius:8px;border-left:2px solid #C4CCD8}
+.layer-differentiator strong{color:#E0E5EC;font-weight:600}
+
+.trace-block{background:#0A0C10;border:1px solid #141418;border-radius:14px;overflow:hidden;margin:24px 0 48px}
+.trace-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #141418}
+.trace-header .dots{display:flex;gap:6px}
+.trace-header .dots span{width:10px;height:10px;border-radius:50%}
+.trace-header .filename{font-size:11px;color:#3E4559;font-family:'IBM Plex Mono',monospace}
+.trace-body{padding:18px 22px}
+.trace-step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+.trace-step:last-child{margin-bottom:0}
+.trace-icon{width:28px;height:28px;border-radius:8px;background:#111114;border:1px solid #141418;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;color:#C4CCD8;font-family:'IBM Plex Mono',monospace}
+.trace-content{flex:1}
+.trace-content .trace-label{font-size:12px;font-weight:600;color:#E0E5EC;margin-bottom:2px}
+.trace-content .trace-detail{font-size:12px;color:#6C7690;font-family:'IBM Plex Mono',monospace}
+.trace-content .trace-flag{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;margin-top:4px}
+.flag-pass{background:rgba(40,200,64,0.12);color:#28C840}
+.flag-fail{background:rgba(255,95,87,0.12);color:#FF5F57}
+.flag-warn{background:rgba(245,166,35,0.12);color:#A1A1AA}
+.trace-connector{width:1px;height:10px;background:#141418;margin:0 0 0 13px}
+
+.cta-section{text-align:center;padding:80px 0;border-top:1px solid rgba(31,35,48,0.5);margin-top:48px}
+.cta-section h2{font-size:36px;margin-bottom:16px}
+.cta-section p{font-size:16px;color:#6C7690;max-width:520px;margin:0 auto 28px}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:#E0E5EC;color:#09090B;font-weight:700;
+  padding:14px 32px;border-radius:99px;font-size:15px;transition:background 0.2s}
+.btn-primary:hover{background:#C4CCD8}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;border:1px solid #4A5568;color:#E0E5EC;font-weight:600;
+  padding:14px 32px;border-radius:99px;font-size:15px;transition:border-color 0.2s}
+.btn-ghost:hover{border-color:#C4CCD8}
+
+footer{position:relative;z-index:1;border-top:1px solid rgba(31,35,48,0.5);padding:40px;text-align:center;font-size:12px;color:#3E4559}
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="grid-bg"></div>
+<div class="glow-tl"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-brand">
+    <svg width="30" height="30" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="nav-gm" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#E4E4E7"/><stop offset="40%" stop-color="#A1A1AA"/><stop offset="100%" stop-color="#52525B"/></linearGradient><linearGradient id="nav-gc" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#71717A"/><stop offset="50%" stop-color="#D4D4D8"/><stop offset="100%" stop-color="#71717A"/></linearGradient><linearGradient id="nav-gl" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#E4E4E7"/><stop offset="100%" stop-color="#A1A1AA"/></linearGradient><linearGradient id="nav-gr" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#A1A1AA"/><stop offset="100%" stop-color="#52525B"/></linearGradient></defs><rect x="3" y="3" width="58" height="58" rx="14" fill="none" stroke="url(#nav-gm)" stroke-width="1" opacity="0.35"/><polygon points="32,9 36,14 32,19 28,14" fill="url(#nav-gm)" stroke="#D4D4D8" stroke-width="0.3" opacity="0.9"/><line x1="32" y1="19" x2="32" y2="25" stroke="url(#nav-gm)" stroke-width="1.2" opacity="0.4"/><line x1="14" y1="25" x2="50" y2="25" stroke="url(#nav-gc)" stroke-width="1.2" opacity="0.35"/><line x1="19" y1="25" x2="18" y2="31" stroke="#A1A1AA" stroke-width="0.6" opacity="0.2"/><line x1="27" y1="25" x2="28" y2="31" stroke="#A1A1AA" stroke-width="0.6" opacity="0.2"/><circle cx="18" cy="32" r="3" fill="url(#nav-gl)" opacity="0.85"/><circle cx="28" cy="32" r="3" fill="url(#nav-gl)" opacity="0.85"/><circle cx="23" cy="40" r="2.5" fill="url(#nav-gl)" opacity="0.5"/><circle cx="23" cy="49" r="2" fill="url(#nav-gl)" opacity="0.3"/><line x1="18" y1="35" x2="23" y2="40" stroke="#A1A1AA" stroke-width="0.5" opacity="0.12"/><line x1="28" y1="35" x2="23" y2="40" stroke="#A1A1AA" stroke-width="0.5" opacity="0.12"/><line x1="37" y1="25" x2="36" y2="31" stroke="#71717A" stroke-width="0.6" opacity="0.2"/><line x1="45" y1="25" x2="46" y2="31" stroke="#71717A" stroke-width="0.6" opacity="0.2"/><circle cx="36" cy="32" r="3" fill="url(#nav-gr)" opacity="0.75"/><circle cx="46" cy="32" r="3" fill="url(#nav-gr)" opacity="0.75"/><circle cx="41" cy="40" r="2.5" fill="url(#nav-gr)" opacity="0.4"/><circle cx="41" cy="49" r="2" fill="url(#nav-gr)" opacity="0.25"/><line x1="36" y1="35" x2="41" y2="40" stroke="#71717A" stroke-width="0.5" opacity="0.12"/><line x1="46" y1="35" x2="41" y2="40" stroke="#71717A" stroke-width="0.5" opacity="0.12"/></svg>
+    <span style="color:#A1A1AA;font-weight:800">Bias<span style="color:#71717A;font-weight:600">Ops</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="/#product">Products</a>
+    <a href="/fair-lending.html">Fair Lending</a>
+    <a href="/llm-observability.html" style="color:#E0E5EC">LLM Compliance</a>
+    <a href="/contact.html">Contact</a>
+  </div>
+  <a href="/contact.html" class="nav-cta">Book a Demo</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="breadcrumb">
+    <a href="/">BiasOps</a> / <a href="/#product">Products</a> / <span style="color:#E0E5EC">LLM Compliance Observability</span>
+  </div>
+
+  <h1>
+    LLM Compliance <span class="text-shimmer">Observability</span>
+  </h1>
+
+  <p class="subtitle">
+    LLM observability tools tell you if the model is fast. BiasOps tells you if the model is legal. Six monitoring layers that track regulatory boundaries, fairness, provenance, PII lineage, hallucinated compliance claims, and disclosure requirements. All in real time.
+  </p>
+
+  <div class="meta">
+    <span><span class="dot"></span> 6 monitoring layers</span>
+    <span>Real-time enforcement</span>
+    <span>Agent chain support</span>
+    <span>Audit-ready traces</span>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- SCENARIO -->
+  <div class="scenario-card">
+    <div class="label">Real-world scenario</div>
+    <h3>Meridian Bank · LLM-Powered Loan Advisor</h3>
+    <p>
+      Meridian Bank deploys an LLM-powered advisor that helps customers understand loan options, check eligibility, and submit applications. The system uses RAG over internal product documents, customer financial records, and regulatory guidelines. It processes 15,000 conversations per day. Three months in, an internal audit discovers the advisor has been giving shorter, less detailed responses to applicants from certain ZIP codes, fabricating compliance certifications for products that haven't been reviewed, and leaking information between customer sessions through the shared vector store. None of their existing observability tools, which tracked latency, token cost, and general hallucination rates, caught none of it.
+    </p>
+  </div>
+
+  <!-- WHY THIS MATTERS -->
+  <h2>Why generic LLM observability misses the real risks</h2>
+  <p class="body">
+    Every LLM observability tool on the market monitors the same plane: engineering metrics. Latency, token cost, hallucination rate, retrieval relevance, prompt quality. These are useful for debugging and cost optimization. They are completely blind to regulatory risk.
+  </p>
+  <p class="body">
+    A bank does not get fined because latency was high. A healthcare company does not get sued because token costs spiked. They get fined because the LLM <strong>crossed a regulatory boundary no one was watching</strong>. It gave financial advice it was not authorized to give, treated demographic groups differently, fabricated a compliance claim, or leaked PII across tenant boundaries.
+  </p>
+  <p class="body">
+    BiasOps operates on a fundamentally different monitoring plane: <strong>compliance observability</strong>. Not "is the LLM working well?" but "is the LLM operating within regulatory boundaries, in real time, with proof?"
+  </p>
+
+  <!-- COMPARISON -->
+  <div class="comparison">
+    <div class="comparison-col generic">
+      <h4>Generic LLM observability</h4>
+      <ul>
+        <li>Latency and token cost</li>
+        <li>Hallucination rate (factual)</li>
+        <li>Prompt quality scores</li>
+        <li>Retrieval relevance</li>
+        <li>User satisfaction ratings</li>
+        <li>Error rates and uptime</li>
+      </ul>
+    </div>
+    <div class="comparison-col biasops">
+      <h4>BiasOps compliance observability</h4>
+      <ul>
+        <li>Regulatory boundary violations</li>
+        <li>Demographic treatment parity</li>
+        <li>Adverse decision provenance</li>
+        <li>PII cross-contamination lineage</li>
+        <li>Hallucinated compliance claims</li>
+        <li>Disclosure requirement gaps</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══ LAYER 1 ═══ -->
+  <h2>The 6 monitoring layers</h2>
+
+  <div class="layer-section">
+    <div class="top-line"></div>
+    <div class="layer-tag" style="background:rgba(255,95,87,0.1);color:#FF5F57">Layer 1 · Critical</div>
+    <h3>Regulatory boundary detection</h3>
+    <div class="layer-subtitle">Catch the moment your LLM crosses a legal line</div>
+
+    <div class="layer-problem">
+      LLMs do not know where the legal boundary is. A customer service chatbot at a bank casually says <em>"based on your profile, I'd recommend this mortgage rate"</em>. That is unlicensed financial advice (SEC, FINRA). A healthcare bot says <em>"this looks like it could be melanoma"</em>. That is practicing medicine without a license. A hiring assistant says <em>"your age might make this role challenging"</em>. That is age discrimination. Current observability tools do not flag any of this.
+    </div>
+
+    <p class="layer-solution">
+      BiasOps classifies every LLM output into regulatory activity categories in real time: financial advice, medical diagnosis, legal counsel, insurance underwriting, employment decisions. When an output crosses into a regulated activity the system wasn't authorized for, BiasOps flags it instantly and can block the response before it reaches the user.
+    </p>
+
+    <div class="checks-grid">
+      <div class="check-item">
+        <div class="check-dot" style="background:#FF5F57"></div>
+        <span>Financial advice boundary (SEC, FINRA, state regs)</span>
+        <span class="threshold">real-time</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#FF5F57"></div>
+        <span>Medical diagnosis boundary (FDA, state medical boards)</span>
+        <span class="threshold">real-time</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#FF5F57"></div>
+        <span>Legal counsel boundary (unauthorized practice of law)</span>
+        <span class="threshold">real-time</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#A1A1AA"></div>
+        <span>Credit decision language detection (ECOA, FCRA)</span>
+        <span class="threshold">real-time</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#A1A1AA"></div>
+        <span>Insurance recommendation boundary (state DOI)</span>
+        <span class="threshold">real-time</span>
+      </div>
+    </div>
+
+    <div class="layer-differentiator">
+      <strong>Why this does not exist yet:</strong> Langsmith tracks latency. Arize tracks hallucinations. No one tracks whether the LLM just committed a regulatory violation.
+    </div>
+  </div>
+
+  <!-- ═══ LAYER 2 ═══ -->
+  <div class="layer-section">
+    <div class="top-line"></div>
+    <div class="layer-tag" style="background:rgba(245,166,35,0.1);color:#A1A1AA">Layer 2 · High</div>
+    <h3>Response fairness monitoring</h3>
+    <div class="layer-subtitle">Are different people getting different quality of service?</div>
+
+    <div class="layer-problem">
+      When different demographic groups interact with the same LLM, do they get the same quality of service? Research shows LLMs give <em>shorter, less helpful, more dismissive responses</em> to queries associated with certain demographics. In Meridian Bank's case, applicants from lower income ZIP codes received responses averaging 40% fewer words, with fewer product alternatives offered and more abrupt closing language. That is disparate treatment, and in regulated contexts, it is illegal.
+    </div>
+
+    <p class="layer-solution">
+      BiasOps continuously measures response quality parity across demographic cohorts. It tracks response length, helpfulness score, tone sentiment, information density, and follow-up offer rates, segmented by user demographic signals. Statistical tests run automatically to detect disparate treatment before it becomes a pattern.
+    </p>
+
+    <div class="checks-grid">
+      <div class="check-item">
+        <div class="check-dot" style="background:#A1A1AA"></div>
+        <span>Response quality parity across demographic cohorts</span>
+        <span class="threshold">&lt; 10% variance</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#A1A1AA"></div>
+        <span>Tone and sentiment consistency analysis</span>
+        <span class="threshold">continuous</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#A1A1AA"></div>
+        <span>Information completeness by user segment</span>
+        <span class="threshold">&lt; 15% gap</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#28C840"></div>
+        <span>Follow-up engagement parity</span>
+        <span class="threshold">continuous</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#28C840"></div>
+        <span>Denial language disparity detection</span>
+        <span class="threshold">per-session</span>
+      </div>
+    </div>
+
+    <div class="layer-differentiator">
+      <strong>Why this does not exist yet:</strong> Traditional fairness tools measure model predictions (approve/deny). LLM fairness is about treatment quality: how the model talks to you, not just what it decides.
+    </div>
+  </div>
+
+  <!-- ═══ LAYER 3 ═══ -->
+  <div class="layer-section">
+    <div class="top-line"></div>
+    <div class="layer-tag" style="background:rgba(196,204,216,0.08);color:#C4CCD8">Layer 3 · Critical</div>
+    <h3>Adverse decision tracing</h3>
+    <div class="layer-subtitle">When the LLM says no, prove exactly why</div>
+
+    <div class="layer-problem">
+      CFPB requires specific, individualized denial reasons for credit decisions. EU AI Act requires meaningful explanations for high-risk AI outputs. When an LLM-powered agent chain denies a loan, rejects an insurance claim, or flags an applicant: <em>which step made the decision? What information did it have? Can you produce a legally defensible explanation?</em> A Langsmith trace shows you the API calls. It does not produce an adverse action notice a regulator will accept.
+    </div>
+
+    <p class="layer-solution">
+      BiasOps captures full decision provenance for every LLM-powered adverse action. It traces the entire agent chain: which retrieval context was used, which prompt produced the decision, which tool call triggered the outcome. It auto-generates regulation-specific adverse action notices with individualized reasons mapped to actual model inputs, not generic buckets.
+    </p>
+  </div>
+
+  <!-- TRACE VISUALIZATION -->
+  <div class="trace-block">
+    <div class="trace-header">
+      <div class="dots">
+        <span style="background:#FF5F57"></span>
+        <span style="background:#A1A1AA"></span>
+        <span style="background:#28C840"></span>
+      </div>
+      <span class="filename">biasops trace · loan_app_29841 · adverse action</span>
+    </div>
+    <div class="trace-body">
+      <div class="trace-step">
+        <div class="trace-icon">1</div>
+        <div class="trace-content">
+          <div class="trace-label">User query received</div>
+          <div class="trace-detail">"Am I eligible for a 30-year fixed mortgage at 6.5%?"</div>
+          <span class="trace-flag flag-pass">Boundary check: within scope</span>
+        </div>
+      </div>
+      <div class="trace-connector"></div>
+      <div class="trace-step">
+        <div class="trace-icon">2</div>
+        <div class="trace-content">
+          <div class="trace-label">RAG retrieval: customer financial record</div>
+          <div class="trace-detail">Retrieved: income=$62K, DTI=0.44, credit_score=618, zip=30318</div>
+          <span class="trace-flag flag-pass">PII isolation: verified (tenant_id=acct_29841)</span>
+        </div>
+      </div>
+      <div class="trace-connector"></div>
+      <div class="trace-step">
+        <div class="trace-icon">3</div>
+        <div class="trace-content">
+          <div class="trace-label">RAG retrieval: product eligibility rules</div>
+          <div class="trace-detail">30yr_fixed: min_credit=640, max_DTI=0.43, min_income=$55K</div>
+          <span class="trace-flag flag-pass">Source: products/mortgage_30yr_v4.pdf (page 12)</span>
+        </div>
+      </div>
+      <div class="trace-connector"></div>
+      <div class="trace-step">
+        <div class="trace-icon">4</div>
+        <div class="trace-content">
+          <div class="trace-label">LLM decision: denial generated</div>
+          <div class="trace-detail">Reason: credit_score (618 < 640), DTI (0.44 > 0.43)</div>
+          <span class="trace-flag flag-warn">Adverse action triggered. CFPB notice required.</span>
+        </div>
+      </div>
+      <div class="trace-connector"></div>
+      <div class="trace-step">
+        <div class="trace-icon">5</div>
+        <div class="trace-content">
+          <div class="trace-label">BiasOps: adverse action notice auto-generated</div>
+          <div class="trace-detail">
+            ECOA-compliant notice: 2 individualized reasons<br>
+            (1) Credit score below minimum threshold (618 vs. 640 required)<br>
+            (2) Debt-to-income ratio above maximum (44% vs. 43% maximum)
+          </div>
+          <span class="trace-flag flag-pass">CFPB 2023-03 specificity score: 0.92 (≥ 0.70 required)</span>
+        </div>
+      </div>
+      <div class="trace-connector"></div>
+      <div class="trace-step">
+        <div class="trace-icon">6</div>
+        <div class="trace-content">
+          <div class="trace-label">BiasOps: fairness cross-check</div>
+          <div class="trace-detail">ZIP 30318 flagged as demographic proxy (race correlation: 0.68). Denial logged for disparate impact review.</div>
+          <span class="trace-flag flag-fail">Proxy alert: ZIP code correlation exceeds threshold</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ LAYER 4 ═══ -->
+  <div class="layer-section">
+    <div class="top-line"></div>
+    <div class="layer-tag" style="background:rgba(40,200,64,0.1);color:#28C840">Layer 4 · High</div>
+    <h3>PII flow governance</h3>
+    <div class="layer-subtitle">Track where personal data goes inside your RAG pipeline</div>
+
+    <div class="layer-problem">
+      RAG pipelines pull documents from multiple sources: customer records, internal memos, policy documents. Is information from Customer A's file leaking into Customer B's response? Is PII being stored in vector databases without consent? Is the LLM memorizing sensitive data across sessions? Everyone scans outputs for SSNs. <em>The real risk is cross-contamination inside the pipeline.</em>
+    </div>
+
+    <p class="layer-solution">
+      BiasOps tags PII at ingestion, tracks which vector store chunks contain sensitive data, monitors tenant isolation between customers, and verifies that output PII only originates from the requesting user's authorized data sources. It also detects cross-session memory contamination, where the LLM carries information from one conversation into another.
+    </p>
+
+    <div class="checks-grid">
+      <div class="check-item">
+        <div class="check-dot" style="background:#28C840"></div>
+        <span>Cross-tenant data isolation in vector stores</span>
+        <span class="threshold">per-query</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#28C840"></div>
+        <span>PII lineage from source document to LLM output</span>
+        <span class="threshold">per-response</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#A1A1AA"></div>
+        <span>Consent chain verification (authorized for this use?)</span>
+        <span class="threshold">per-retrieval</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#A1A1AA"></div>
+        <span>Cross-session memory contamination detection</span>
+        <span class="threshold">continuous</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#28C840"></div>
+        <span>Right-to-deletion compliance (GDPR Art. 17, CCPA)</span>
+        <span class="threshold">on-demand</span>
+      </div>
+    </div>
+
+    <div class="layer-differentiator">
+      <strong>Why this does not exist yet:</strong> Everyone scans outputs for PII. No one tracks where the PII came from and whether the user consented to that specific use.
+    </div>
+  </div>
+
+  <!-- ═══ LAYER 5 ═══ -->
+  <div class="layer-section">
+    <div class="top-line"></div>
+    <div class="layer-tag" style="background:rgba(196,204,216,0.08);color:#C4CCD8">Layer 5 · Critical</div>
+    <h3>Hallucinated compliance detection</h3>
+    <div class="layer-subtitle">When the LLM fabricates a compliance claim no one verified</div>
+
+    <div class="layer-problem">
+      This is the highest liability risk in LLM deployments. An LLM says <em>"this product complies with Regulation Z"</em> when no compliance check was ever run. Or <em>"your application meets all Fair Housing requirements"</em> when no audit has been performed. Hallucinated compliance claims are <em>worse</em> than no compliance. They create false confidence, legal liability, and evidence of negligence. Generic hallucination detection does not distinguish between a wrong fact about the weather and a fabricated regulatory certification.
+    </div>
+
+    <p class="layer-solution">
+      BiasOps maintains a regulatory knowledge graph and cross-checks every compliance claim the LLM makes against actual policy status, audit results, and regulatory requirements. If the LLM says something is compliant, BiasOps verifies it actually is, or flags the hallucination as a critical compliance event with an auto-generated correction.
+    </p>
+
+    <div class="checks-grid">
+      <div class="check-item">
+        <div class="check-dot" style="background:#FF5F57"></div>
+        <span>Regulatory claim verification against actual audit status</span>
+        <span class="threshold">per-response</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#FF5F57"></div>
+        <span>Fabricated certification or approval detection</span>
+        <span class="threshold">per-response</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#A1A1AA"></div>
+        <span>False policy reference identification</span>
+        <span class="threshold">per-response</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#A1A1AA"></div>
+        <span>Unauthorized compliance assurance flagging</span>
+        <span class="threshold">per-response</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#28C840"></div>
+        <span>Auto-generated correction with accurate regulatory status</span>
+        <span class="threshold">on-flag</span>
+      </div>
+    </div>
+
+    <div class="layer-differentiator">
+      <strong>Why this does not exist yet:</strong> Hallucination detectors ask "is this factually true?" BiasOps asks "did the LLM just make a compliance claim it cannot back up?" A fundamentally different and higher stakes question.
+    </div>
+  </div>
+
+  <!-- ═══ LAYER 6 ═══ -->
+  <div class="layer-section">
+    <div class="top-line"></div>
+    <div class="layer-tag" style="background:rgba(108,118,144,0.1);color:#8A95A8">Layer 6 · Required</div>
+    <h3>Transparency and disclosure compliance</h3>
+    <div class="layer-subtitle">The foundational layer auditors check first</div>
+
+    <div class="layer-problem">
+      EU AI Act requires disclosure when users interact with AI. NYC LL144 requires disclosure for AI in hiring. CFPB guidance requires disclosure when AI influences credit decisions. These requirements vary by jurisdiction, use case, and risk level. <em>Is your system disclosing correctly in every context? Are the disclosures actually meaningful, or are they buried footnotes that do not meet the regulatory standard?</em>
+    </div>
+
+    <p class="layer-solution">
+      BiasOps maintains a jurisdiction-aware disclosure requirement matrix that covers which regulation, which jurisdiction, which use case, and what language. It verifies that every user interaction includes the correct disclosure, monitors for downstream systems that strip or hide disclosures, and ensures disclosures meet the "meaningful" standard required by regulators. Not just a checkbox footnote.
+    </p>
+
+    <div class="checks-grid">
+      <div class="check-item">
+        <div class="check-dot" style="background:#8A95A8"></div>
+        <span>Jurisdiction-specific disclosure requirement matching</span>
+        <span class="threshold">per-session</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#8A95A8"></div>
+        <span>Disclosure presence and placement verification</span>
+        <span class="threshold">per-response</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#8A95A8"></div>
+        <span>Meaningful disclosure standard compliance</span>
+        <span class="threshold">per-session</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#A1A1AA"></div>
+        <span>Downstream disclosure stripping detection</span>
+        <span class="threshold">continuous</span>
+      </div>
+      <div class="check-item">
+        <div class="check-dot" style="background:#8A95A8"></div>
+        <span>Multi-language disclosure accuracy</span>
+        <span class="threshold">per-locale</span>
+      </div>
+    </div>
+
+    <div class="layer-differentiator">
+      <strong>Why this does not exist yet:</strong> Pure regulatory plumbing. No one builds it because it is unglamorous. But it is the first thing an auditor checks.
+    </div>
+  </div>
+
+  <!-- BOTTOM LINE -->
+  <h2>The bottom line</h2>
+  <p class="body">
+    Every LLM observability tool monitors the engineering plane: latency, cost, generic hallucinations. Useful for debugging. Completely blind to regulatory risk.
+  </p>
+  <p class="body">
+    BiasOps monitors the compliance plane. Six layers that answer the questions regulators actually ask: <strong>Did the model cross a legal boundary? Did it treat people fairly? Can you explain the decision? Where did the data come from? Did it fabricate any compliance claims? Did it disclose what it is?</strong>
+  </p>
+  <p class="body">
+    That's not observability. That's compliance as architecture, applied to the LLM layer.
+  </p>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>Compliance is not a patch. <span class="text-shimmer">It is the architecture.</span></h2>
+    <p>See how BiasOps monitors LLM compliance for regulated industries. Design partners welcome.</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+      <a href="/contact.html" class="btn-primary">Book a Demo →</a>
+      <a href="/fair-lending.html" class="btn-ghost">See Fair Lending Use Case →</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2026 BiasOps · Apache 2.0 Licensed</p>
+</footer>
+
+</body>
+</html>
