@@ -1295,6 +1295,7 @@ export default function BiasOpsLanding() {
           <NavDropdown label="Docs" items={[
             { text: "Fair Lending Compliance", desc: "ECOA, HMDA, CFPB policy walkthrough", href: "/fair-lending.html" },
             { text: "LLM Compliance Observability", desc: "Six monitoring layers for regulated LLMs", href: "/llm-observability.html" },
+            { text: "Why We Build", desc: "The founding vision and infrastructure thesis", href: "/why-we-build.html" },
           ]} />
           <a href="/contact.html" style={{ fontSize: 14, color: "#6C7690", transition: "color 0.2s" }}
             onMouseEnter={e => e.target.style.color = "#E0E5EC"}

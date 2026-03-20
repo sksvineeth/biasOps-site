@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Why We Are Building BiasOps · BiasOps</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#09090B;color:#E0E5EC}
+::selection{background:rgba(196,204,216,0.25);color:#E0E5EC}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#09090B}
+::-webkit-scrollbar-thumb{background:#141418;border-radius:3px}
+a{color:inherit;text-decoration:none}
+
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.text-shimmer{
+  background:linear-gradient(135deg,#E8ECF1 0%,#8A95A8 40%,#4A5568 70%,#8A95A8 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:shimmer 4s linear infinite;
+}
+
+/* ── OVERLAYS ── */
+.noise{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.04;
+  background-image:linear-gradient(rgba(31,35,48,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(31,35,48,0.5) 1px,transparent 1px);
+  background-size:64px 64px}
+.glow-tl{position:fixed;top:-20%;left:-10%;width:60%;height:60%;z-index:0;pointer-events:none;border-radius:50%;opacity:0.07;
+  background:radial-gradient(circle,#C4CCD8 0%,transparent 70%)}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  background:rgba(8,9,12,0.92);border-bottom:1px solid rgba(31,35,48,0.5);
+  height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 40px}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand-text{font-size:18px;font-weight:800;letter-spacing:-0.5px}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{font-size:14px;color:#6C7690;transition:color 0.2s}
+.nav-links a:hover{color:#E0E5EC}
+.nav-links a.active{color:#E0E5EC}
+.nav-cta{font-size:13px;font-weight:600;color:#09090B;background:#E0E5EC;padding:8px 20px;border-radius:99px;transition:background 0.2s}
+.nav-cta:hover{background:#C4CCD8}
+
+/* ── HERO ── */
+.hero{position:relative;z-index:1;padding:120px 40px 60px;max-width:900px;margin:0 auto;
+  animation:fadeIn 0.8s cubic-bezier(0.16,1,0.3,1) forwards}
+.breadcrumb{font-size:13px;color:#6C7690;margin-bottom:24px}
+.breadcrumb a{color:#8A95A8;transition:color 0.2s}
+.breadcrumb a:hover{color:#E0E5EC}
+.hero h1{font-size:clamp(36px,5vw,56px);font-weight:800;line-height:1.08;letter-spacing:-2.5px;color:#ECEFF4;margin-bottom:20px}
+.hero .subtitle{font-size:18px;color:#6C7690;line-height:1.7;max-width:680px;margin-bottom:32px}
+.hero .meta{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:#6C7690}
+.hero .meta span{display:flex;align-items:center;gap:6px}
+.dot-live{width:6px;height:6px;border-radius:50%;background:#28C840}
+
+/* ── CONTENT WRAPPER ── */
+.content{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 40px 80px}
+
+/* ── SECTION HEADINGS ── */
+h2{font-size:28px;font-weight:800;color:#ECEFF4;letter-spacing:-1.5px;margin:56px 0 20px}
+h2:first-of-type{margin-top:0}
+p.body{font-size:15px;color:#6C7690;line-height:1.8;margin-bottom:20px}
+
+/* ── ASYMMETRY CARD (mirrors scenario-card) ── */
+.scenario-card{background:#0F0F12;border:1px solid #141418;border-radius:16px;padding:28px;margin-bottom:48px;
+  border-left:3px solid #FF5F57}
+.scenario-card .label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#FF5F57;margin-bottom:8px}
+.scenario-card h3{font-size:20px;font-weight:700;color:#ECEFF4;margin-bottom:12px}
+.scenario-card p{font-size:15px;color:#6C7690;line-height:1.7}
+
+/* ── FOUNDER CARD (silver variant) ── */
+.founder-card{background:#0F0F12;border:1px solid #141418;border-radius:16px;padding:36px;margin-bottom:48px;
+  border-left:3px solid #A1A1AA;position:relative;overflow:hidden}
+.founder-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(196,204,216,0.12),transparent)}
+.founder-card .label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#8A95A8;margin-bottom:8px}
+.founder-card blockquote{font-size:20px;font-weight:700;color:#ECEFF4;line-height:1.4;margin-bottom:16px;letter-spacing:-0.5px}
+.founder-card p{font-size:15px;color:#6C7690;line-height:1.8;margin-bottom:16px}
+.founder-card p:last-child{margin-bottom:0}
+.founder-stats{display:flex;gap:32px;flex-wrap:wrap;padding:20px 0;border-top:1px solid #141418;border-bottom:1px solid #141418;margin:20px 0}
+.founder-stat-val{font-size:22px;font-weight:800;color:#A1A1AA;font-family:'IBM Plex Mono',monospace;display:block;letter-spacing:-0.5px}
+.founder-stat-label{font-size:10px;color:#3E4559;text-transform:uppercase;letter-spacing:1.5px;display:block;margin-top:3px}
+
+/* ── PROBLEM LIST (policy-grid style) ── */
+.policy-grid{display:flex;flex-direction:column;gap:12px;margin:24px 0 48px}
+.policy-card{background:#0F0F12;border:1px solid #141418;border-radius:14px;padding:22px;position:relative;overflow:hidden;
+  transition:border-color 0.2s}
+.policy-card:hover{border-color:#2A2E3D}
+.policy-card .top-line{position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(196,204,216,0.12),transparent)}
+.policy-card .severity{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  padding:3px 10px;border-radius:4px;margin-bottom:10px}
+.severity-critical{background:rgba(255,95,87,0.12);color:#FF5F57}
+.severity-high{background:rgba(161,161,170,0.10);color:#A1A1AA}
+.severity-silver{background:rgba(196,204,216,0.08);color:#C4CCD8}
+.policy-card h4{font-size:16px;font-weight:700;color:#E0E5EC;margin-bottom:6px}
+.policy-card .regulation{font-size:12px;color:#8A95A8;font-family:'IBM Plex Mono',monospace;margin-bottom:10px}
+.policy-card .checks{display:flex;flex-direction:column;gap:4px}
+.policy-card .check{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:#6C7690;line-height:1.5}
+.policy-card .check::before{content:'';width:5px;height:5px;border-radius:50%;background:#C4CCD8;flex-shrink:0;margin-top:5px}
+
+/* ── PLATFORM ACCORDION (demo-flow style) ── */
+.demo-flow{background:#0F0F12;border:1px solid #141418;border-radius:16px;overflow:visible;margin:24px 0 48px;position:relative;z-index:1}
+.demo-flow > *:first-child{border-radius:16px 16px 0 0;overflow:hidden}
+.demo-flow > *:last-child{border-radius:0 0 16px 16px}
+.demo-header{display:flex;align-items:center;gap:6px;padding:10px 16px;border-bottom:1px solid #141418}
+.demo-header span.dot-btn{width:10px;height:10px;border-radius:50%}
+.demo-header .title{margin-left:12px;font-size:11px;color:#3E4559;font-family:'IBM Plex Mono',monospace}
+.demo-body{padding:0}
+
+.accordion-item{border-bottom:1px solid #141418;transition:background 0.2s}
+.accordion-item:last-child{border-bottom:none}
+.accordion-header{display:flex;align-items:center;gap:16px;padding:20px 24px;cursor:pointer;user-select:none;transition:background 0.2s}
+.accordion-header:hover{background:rgba(255,255,255,0.02)}
+.accordion-item.open .accordion-header{background:rgba(196,204,216,0.03)}
+.accordion-num{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:#3E4559;width:20px;flex-shrink:0;letter-spacing:0.04em}
+.accordion-item.open .accordion-num{color:#C4CCD8}
+.accordion-title-block{flex:1}
+.accordion-title{font-size:15px;font-weight:700;color:#C4CCD8;margin-bottom:2px;transition:color 0.2s}
+.accordion-item.open .accordion-title{color:#E0E5EC}
+.accordion-sub{font-size:12px;color:#3E4559;font-family:'IBM Plex Mono',monospace;letter-spacing:0.02em}
+.accordion-item.open .accordion-sub{color:#6C7690}
+.accordion-tags{display:flex;gap:6px;flex-wrap:wrap}
+.accordion-tag{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  padding:3px 8px;border-radius:4px;background:rgba(255,255,255,0.04);color:#3E4559;border:1px solid #141418}
+.accordion-item.open .accordion-tag{background:rgba(196,204,216,0.07);color:#8A95A8;border-color:#2A2E3D}
+.accordion-chevron{color:#3E4559;font-size:16px;transition:transform 0.25s,color 0.2s;flex-shrink:0}
+.accordion-item.open .accordion-chevron{transform:rotate(180deg);color:#C4CCD8}
+.accordion-body{max-height:0;overflow:hidden;transition:max-height 0.4s cubic-bezier(0.4,0,0.2,1)}
+.accordion-item.open .accordion-body{max-height:480px}
+.accordion-content{padding:0 24px 24px 60px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.acc-col{padding:14px 16px;border-radius:8px;font-size:13px;color:#6C7690;line-height:1.7}
+.acc-col.before{background:rgba(255,95,87,0.05);border:1px solid rgba(255,95,87,0.12)}
+.acc-col.after{background:rgba(196,204,216,0.04);border:1px solid rgba(196,204,216,0.1)}
+.acc-col-label{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:0.1em;
+  text-transform:uppercase;display:block;margin-bottom:8px}
+.acc-col.before .acc-col-label{color:#FF5F57}
+.acc-col.after .acc-col-label{color:#C4CCD8}
+.acc-col strong{color:#E0E5EC;font-weight:500}
+
+/* ── RESULTS TABLE ── */
+.results-table{width:100%;border-collapse:collapse;margin:24px 0 48px}
+.results-table th{text-align:left;font-size:11px;color:#6C7690;font-weight:600;text-transform:uppercase;
+  letter-spacing:1px;padding:10px 14px;border-bottom:1px solid #141418}
+.results-table td{font-size:13px;padding:12px 14px;border-bottom:1px solid rgba(31,35,48,0.5);color:#C4CCD8}
+.results-table tr:hover td{background:rgba(255,255,255,0.01)}
+.results-table .status{display:flex;align-items:center;gap:6px}
+.dot-pass{width:7px;height:7px;border-radius:50%;background:#28C840;flex-shrink:0}
+.dot-fail{width:7px;height:7px;border-radius:50%;background:#FF5F57;flex-shrink:0}
+.dot-warn{width:7px;height:7px;border-radius:50%;background:#A1A1AA;flex-shrink:0}
+
+/* ── YAML BLOCK ── */
+.yaml-block{border-radius:14px;overflow:hidden;border:1px solid #141418;background:#0A0C10;margin:24px 0 48px;
+  box-shadow:0 16px 48px rgba(0,0,0,0.3)}
+.yaml-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #141418}
+.yaml-header .dots{display:flex;gap:6px}
+.yaml-header .dots span{width:10px;height:10px;border-radius:50%}
+.yaml-header .filename{font-size:11px;color:#3E4559;font-family:'IBM Plex Mono',monospace}
+.yaml-block pre{padding:18px 22px;font-size:13px;font-family:'IBM Plex Mono',monospace;line-height:1.7;overflow-x:auto}
+.yaml-key{color:#6C7690}
+.yaml-val{color:#C4CCD8}
+.yaml-num{color:#E0E5EC}
+.yaml-comment{color:#3E4559}
+
+/* ── STAT ROW ── */
+.stat-row{display:flex;gap:1px;margin:32px 0 48px;border:1px solid #141418;border-radius:12px;overflow:hidden}
+.stat-block{flex:1;background:#0F0F12;padding:24px 20px;text-align:center;transition:background 0.2s}
+.stat-block:hover{background:#111114}
+.stat-num{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600;color:#C4CCD8;display:block;
+  letter-spacing:-1px;line-height:1;margin-bottom:8px}
+.stat-desc{font-size:11px;color:#3E4559;line-height:1.5;text-transform:uppercase;letter-spacing:0.8px}
+
+/* ── PULL QUOTE ── */
+.pull-quote{border-left:3px solid #2A2E3D;padding:20px 24px;margin:32px 0;background:rgba(255,255,255,0.02);border-radius:0 8px 8px 0}
+.pull-quote p{font-size:17px;font-weight:600;color:#C4CCD8;line-height:1.55;letter-spacing:-0.3px}
+
+/* ── BUYER GRID ── */
+.buyer-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0 48px}
+.buyer-card{background:#0F0F12;border:1px solid #141418;border-radius:14px;padding:22px;transition:border-color 0.2s}
+.buyer-card:hover{border-color:#2A2E3D}
+.buyer-card.primary{grid-column:1 / -1;border-color:#2A2E3D;background:#111114}
+.buyer-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#3E4559;margin-bottom:8px}
+.buyer-card.primary .buyer-label{color:#8A95A8}
+.buyer-title{font-size:16px;font-weight:700;color:#E0E5EC;margin-bottom:8px}
+.buyer-card.primary .buyer-title{font-size:18px}
+.buyer-desc{font-size:13px;color:#6C7690;line-height:1.7}
+
+/* ── NOT FOR BOX ── */
+.not-for-box{background:rgba(255,95,87,0.04);border:1px solid rgba(255,95,87,0.1);border-radius:12px;
+  padding:18px 22px;margin-bottom:48px}
+.not-for-box .label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#FF5F57;margin-bottom:6px}
+.not-for-box p{font-size:13px;color:#6C7690;line-height:1.7}
+
+/* ── CTA SECTION ── */
+.cta-section{text-align:center;padding:80px 0;border-top:1px solid rgba(31,35,48,0.5);margin-top:48px}
+.cta-section h2{font-size:36px;margin-bottom:16px}
+.cta-section p{font-size:16px;color:#6C7690;max-width:480px;margin:0 auto 28px}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:#E0E5EC;color:#09090B;font-weight:700;
+  padding:14px 32px;border-radius:99px;font-size:15px;transition:background 0.2s}
+.btn-primary:hover{background:#C4CCD8}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;border:1px solid #4A5568;color:#E0E5EC;font-weight:600;
+  padding:14px 32px;border-radius:99px;font-size:15px;transition:border-color 0.2s}
+.btn-ghost:hover{border-color:#C4CCD8}
+
+/* ── FOOTER ── */
+footer{position:relative;z-index:1;border-top:1px solid rgba(31,35,48,0.5);padding:40px;text-align:center;
+  font-size:12px;color:#3E4559}
+
+/* ── FADE IN ── */
+.fade{opacity:0;transform:translateY(20px);transition:opacity 0.6s cubic-bezier(0.16,1,0.3,1),transform 0.6s cubic-bezier(0.16,1,0.3,1)}
+.fade.visible{opacity:1;transform:none}
+.fade-d1{transition-delay:0.1s}
+.fade-d2{transition-delay:0.2s}
+.fade-d3{transition-delay:0.3s}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  nav{padding:0 20px}
+  .nav-links{display:none}
+  .hero{padding:100px 20px 40px}
+  .content{padding:0 20px 60px}
+  .accordion-content{grid-template-columns:1fr}
+  .buyer-grid{grid-template-columns:1fr}
+  .buyer-card.primary{grid-column:1}
+  .stat-row{flex-direction:column;gap:0}
+  h2{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="grid-bg"></div>
+<div class="glow-tl"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-brand">
+    <svg width="30" height="30" viewBox="0 0 64 64" fill="none">
+      <defs>
+        <linearGradient id="nav-gm" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#E4E4E7"/><stop offset="40%" stop-color="#A1A1AA"/><stop offset="100%" stop-color="#52525B"/></linearGradient>
+        <linearGradient id="nav-gc" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#71717A"/><stop offset="50%" stop-color="#D4D4D8"/><stop offset="100%" stop-color="#71717A"/></linearGradient>
+        <linearGradient id="nav-gl" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#E4E4E7"/><stop offset="100%" stop-color="#A1A1AA"/></linearGradient>
+        <linearGradient id="nav-gr" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#A1A1AA"/><stop offset="100%" stop-color="#52525B"/></linearGradient>
+      </defs>
+      <rect x="3" y="3" width="58" height="58" rx="14" fill="none" stroke="url(#nav-gm)" stroke-width="1" opacity="0.35"/>
+      <polygon points="32,9 36,14 32,19 28,14" fill="url(#nav-gm)" stroke="#D4D4D8" stroke-width="0.3" opacity="0.9"/>
+      <line x1="32" y1="19" x2="32" y2="25" stroke="url(#nav-gm)" stroke-width="1.2" opacity="0.4"/>
+      <line x1="14" y1="25" x2="50" y2="25" stroke="url(#nav-gc)" stroke-width="1.2" opacity="0.35"/>
+      <line x1="19" y1="25" x2="18" y2="31" stroke="#A1A1AA" stroke-width="0.6" opacity="0.2"/>
+      <line x1="27" y1="25" x2="28" y2="31" stroke="#A1A1AA" stroke-width="0.6" opacity="0.2"/>
+      <circle cx="18" cy="32" r="3" fill="url(#nav-gl)" opacity="0.85"/>
+      <circle cx="28" cy="32" r="3" fill="url(#nav-gl)" opacity="0.85"/>
+      <circle cx="23" cy="40" r="2.5" fill="url(#nav-gl)" opacity="0.5"/>
+      <circle cx="23" cy="49" r="2" fill="url(#nav-gl)" opacity="0.3"/>
+      <line x1="18" y1="35" x2="23" y2="40" stroke="#A1A1AA" stroke-width="0.5" opacity="0.12"/>
+      <line x1="28" y1="35" x2="23" y2="40" stroke="#A1A1AA" stroke-width="0.5" opacity="0.12"/>
+      <line x1="37" y1="25" x2="36" y2="31" stroke="#71717A" stroke-width="0.6" opacity="0.2"/>
+      <line x1="45" y1="25" x2="46" y2="31" stroke="#71717A" stroke-width="0.6" opacity="0.2"/>
+      <circle cx="36" cy="32" r="3" fill="url(#nav-gr)" opacity="0.75"/>
+      <circle cx="46" cy="32" r="3" fill="url(#nav-gr)" opacity="0.75"/>
+      <circle cx="41" cy="40" r="2.5" fill="url(#nav-gr)" opacity="0.4"/>
+      <circle cx="41" cy="49" r="2" fill="url(#nav-gr)" opacity="0.25"/>
+      <line x1="36" y1="35" x2="41" y2="40" stroke="#71717A" stroke-width="0.5" opacity="0.12"/>
+      <line x1="46" y1="35" x2="41" y2="40" stroke="#71717A" stroke-width="0.5" opacity="0.12"/>
+    </svg>
+    <span class="nav-brand-text"><span style="color:#A1A1AA">Bias</span><span style="color:#71717A;font-weight:600">Ops</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="/#product">Products</a>
+    <a href="/fair-lending.html">Fair Lending</a>
+    <a href="/llm-observability.html">LLM Compliance</a>
+    <a href="/why-we-build.html" class="active">Why We Build</a>
+  </div>
+  <a href="/contact.html" class="nav-cta">Book a Demo</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="breadcrumb">
+    <a href="/">BiasOps</a> / <a href="/#docs">Docs</a> / <span style="color:#E0E5EC">Why We Are Building BiasOps</span>
+  </div>
+
+  <h1>
+    Why We Are Building <span class="text-shimmer">BiasOps</span>
+  </h1>
+
+  <p class="subtitle">
+    There is a person at every regulated enterprise who owns the risk of AI without owning the systems that create it. BiasOps was built for that person.
+  </p>
+
+  <div class="meta">
+    <span><span class="dot-live"></span> Founding vision</span>
+    <span>9 years of enterprise governance</span>
+    <span>4 platform primitives</span>
+    <span>~8 min read</span>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- THE ASYMMETRY -->
+  <div class="scenario-card fade">
+    <div class="label">The accountability gap</div>
+    <h3>The person who owns the risk without owning the system</h3>
+    <p>
+      They carry the title: Chief Compliance Officer, Chief Risk Officer, Head of Model Risk Management. They sit in the room when the board asks about AI accountability. They sign off on audit responses. They are named in the regulatory filing. When an AI system fails in production after passing a compliance review, the accountability lands on them.
+      <br/><br/>
+      But they did not build the model. They do not control the pipeline. They cannot see, in real time, whether the system running in production today matches the system they approved three months ago. They are accountable for outcomes they cannot continuously monitor. That gap between accountability and visibility is the problem BiasOps was built to close.
+    </p>
+  </div>
+
+  <!-- WHAT THEY WORK WITH -->
+  <h2>What they are working with today</h2>
+  <p class="body">
+    Most AI governance programs were built before the tooling existed to do this differently. The result is a set of structural gaps that are not anyone's fault, but are everyone's problem.
+  </p>
+
+  <div class="policy-grid fade">
+
+    <div class="policy-card">
+      <div class="top-line"></div>
+      <span class="severity severity-high">Structural Gap</span>
+      <h4>Policies in documents, not systems</h4>
+      <div class="regulation">compliance-workflow.manual · no shared schema · no source of truth</div>
+      <div class="checks">
+        <div class="check">Thresholds get negotiated in review meetings between teams who share no common language or schema</div>
+        <div class="check">Model approvals are point-in-time snapshots against criteria that may already be refined</div>
+        <div class="check">Different reviewers interpret the same requirement differently each cycle</div>
+      </div>
+    </div>
+
+    <div class="policy-card">
+      <div class="top-line"></div>
+      <span class="severity severity-high">Structural Gap</span>
+      <h4>Regulation changes take weeks to propagate</h4>
+      <div class="regulation">change-management.manual · no automated propagation</div>
+      <div class="checks">
+        <div class="check">Someone manually identifies every affected model when a rule changes</div>
+        <div class="check">Re-communicating to every engineering team takes weeks, sometimes months</div>
+        <div class="check">Models continue operating under criteria that are no longer current</div>
+      </div>
+    </div>
+
+    <div class="policy-card">
+      <div class="top-line"></div>
+      <span class="severity severity-high">Structural Gap</span>
+      <h4>Continuous compliance requires a project, not a query</h4>
+      <div class="regulation">audit-prep.manual · five teams · incompatible record formats</div>
+      <div class="checks">
+        <div class="check">Evidence gets assembled from five teams who maintain no compatible records</div>
+        <div class="check">Nobody can answer whether a model stayed compliant continuously from deployment through today</div>
+        <div class="check">Every regulatory request becomes a weeks-long retrieval exercise</div>
+      </div>
+    </div>
+
+    <div class="policy-card">
+      <div class="top-line"></div>
+      <span class="severity severity-high">Structural Gap</span>
+      <h4>Drift is invisible until it becomes a crisis</h4>
+      <div class="regulation">production-monitoring.manual · telemetry and policy disconnected</div>
+      <div class="checks">
+        <div class="check">91% of ML models degrade over time, per peer-reviewed research across 32 datasets in four industries (Vela et al., Scientific Reports, 2022)</div>
+        <div class="check">The compliance team is typically the last to know when a model drifts in production</div>
+        <div class="check">Monitoring telemetry and compliance policy live in separate systems with no shared signal</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="stat-row fade">
+    <div class="stat-block">
+      <span class="stat-num">70%</span>
+      <span class="stat-desc">cite compliance as a top-3 GenAI challenge</span>
+      <span style="display:block;font-size:9px;color:#3E4559;margin-top:6px;font-family:'IBM Plex Mono',monospace;letter-spacing:0.04em">Gartner, n=360, Q2 2025</span>
+    </div>
+    <div class="stat-block">
+      <span class="stat-num">23%</span>
+      <span class="stat-desc">confident they can actually manage it</span>
+      <span style="display:block;font-size:9px;color:#3E4559;margin-top:6px;font-family:'IBM Plex Mono',monospace;letter-spacing:0.04em">Gartner, n=360, Q2 2025</span>
+    </div>
+    <div class="stat-block">
+      <span class="stat-num">91%</span>
+      <span class="stat-desc">of ML models degrade over time</span>
+      <span style="display:block;font-size:9px;color:#3E4559;margin-top:6px;font-family:'IBM Plex Mono',monospace;letter-spacing:0.04em">Vela et al., Scientific Reports, 2022</span>
+    </div>
+  </div>
+
+  <div class="pull-quote fade">
+    <p>This is not a failure of effort or intent. Every person in that process is trying to do the right thing. It is a failure of infrastructure. The tools that exist were built to make compliance documentation faster. Not to make compliance itself continuous.</p>
+  </div>
+
+  <!-- ENFORCEMENT -->
+  <h2>Enforcement is no longer approaching</h2>
+  <p class="body">
+    The standard has shifted in every regulated industry from point-in-time approval to continuous, demonstrable accountability. The question regulators are now asking is not "did you run a compliance review." It is this:
+  </p>
+
+  <div class="pull-quote fade">
+    <p>"Can you prove the system was compliant, continuously, from the day it was deployed?"</p>
+  </div>
+
+  <table class="results-table fade">
+    <thead>
+      <tr>
+        <th>Framework</th>
+        <th>Status</th>
+        <th>Scope</th>
+        <th>Exposure</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#C4CCD8">EU AI Act</td>
+        <td><span class="status"><span class="dot-fail"></span> Live Aug 2025</span></td>
+        <td style="color:#6C7690">GPAI + High-risk AI systems</td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#FF5F57">€35M or 7% turnover</td>
+      </tr>
+      <tr>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#C4CCD8">SR 11-7</td>
+        <td><span class="status"><span class="dot-warn"></span> Ongoing</span></td>
+        <td style="color:#6C7690">Model risk · Financial services</td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#A1A1AA">Regulatory action</td>
+      </tr>
+      <tr>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#C4CCD8">FDA AI/ML</td>
+        <td><span class="status"><span class="dot-warn"></span> Active</span></td>
+        <td style="color:#6C7690">AI-enabled medical devices</td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#A1A1AA">Market removal</td>
+      </tr>
+      <tr>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#C4CCD8">NIST AI RMF</td>
+        <td><span class="status"><span class="dot-pass"></span> Adopted</span></td>
+        <td style="color:#6C7690">Cross-industry risk lifecycle</td>
+        <td style="font-family:'IBM Plex Mono',monospace;color:#A1A1AA">Procurement risk</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="body">
+    Most organizations cannot answer the regulator's question today. Not because they haven't tried. Because the infrastructure to answer it has not existed until now.
+  </p>
+
+  <!-- WHAT BIASOPS BUILDS -->
+  <h2>What BiasOps builds</h2>
+  <p class="body">
+    BiasOps makes your compliance policies executable: version-controlled, automatically enforced across every model in your organization, and continuously generating the evidence your auditors and regulators require. Four platform primitives, working together.
+  </p>
+
+  <div class="demo-flow fade">
+    <div class="demo-header">
+      <span class="dot-btn" style="background:#FF5F57"></span>
+      <span class="dot-btn" style="background:#A1A1AA"></span>
+      <span class="dot-btn" style="background:#28C840"></span>
+      <span class="title">biasops.ai · Platform Primitives</span>
+    </div>
+    <div class="demo-body">
+
+      <div class="accordion-item" id="a1">
+        <div class="accordion-header" onclick="toggleAcc('a1')">
+          <span class="accordion-num">01</span>
+          <div class="accordion-title-block">
+            <div class="accordion-title">Policy Packs</div>
+            <div class="accordion-sub">policy-packs.marketplace · pre-built · versioned · regulation-mapped</div>
+          </div>
+          <div class="accordion-tags">
+            <span class="accordion-tag">EU AI Act</span>
+            <span class="accordion-tag">NIST RMF</span>
+            <span class="accordion-tag">SR 11-7</span>
+          </div>
+          <span class="accordion-chevron">⌄</span>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-content">
+            <div class="acc-col before">
+              <span class="acc-col-label">The current state</span>
+              Most governance programs spend the first weeks of every new regulation cycle writing requirements from the ground up. Different interpretations across teams, inconsistent criteria across cycles, and requirements that are outdated the moment a framework is revised.
+            </div>
+            <div class="acc-col after">
+              <span class="acc-col-label">With BiasOps</span>
+              Pre-built, regulation-mapped, versioned bundles your team deploys and customizes, not constructs from scratch. <strong>When a regulation updates, the pack updates.</strong> Every governed model inherits the change automatically. No manual re-communication. No interpretation gaps.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item" id="a2">
+        <div class="accordion-header" onclick="toggleAcc('a2')">
+          <span class="accordion-num">02</span>
+          <div class="accordion-title-block">
+            <div class="accordion-title">Developer Integration Layer</div>
+            <div class="accordion-sub">compliance.pipeline · runs-where-engineers-work · ci-cd · no-bottlenecks</div>
+          </div>
+          <div class="accordion-tags">
+            <span class="accordion-tag">CI/CD</span>
+            <span class="accordion-tag">ML Pipeline</span>
+          </div>
+          <span class="accordion-chevron">⌄</span>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-content">
+            <div class="acc-col before">
+              <span class="acc-col-label">The current state</span>
+              The friction between compliance and engineering is not a people problem. It is a tooling problem. Compliance requirements live in documents; engineering work lives in code. The two rarely share a schema or a source of truth.
+            </div>
+            <div class="acc-col after">
+              <span class="acc-col-label">With BiasOps</span>
+              Policy checks run at data ingestion, training, evaluation, and deployment, the same way a security scan runs in CI/CD. <strong>A failed check looks like a failed test. An audit trail looks like a log.</strong> Engineers work without review bottlenecks. Compliance teams have visibility without chasing status updates.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item" id="a3">
+        <div class="accordion-header" onclick="toggleAcc('a3')">
+          <span class="accordion-num">03</span>
+          <div class="accordion-title-block">
+            <div class="accordion-title">Orchestration Interface</div>
+            <div class="accordion-sub">compliance.dashboard · portfolio-view · real-time · change-management</div>
+          </div>
+          <div class="accordion-tags">
+            <span class="accordion-tag">Portfolio</span>
+            <span class="accordion-tag">Real-time</span>
+          </div>
+          <span class="accordion-chevron">⌄</span>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-content">
+            <div class="acc-col before">
+              <span class="acc-col-label">The current state</span>
+              For most organizations today, producing a real-time view of AI compliance across the portfolio requires days of manual assembly from teams who maintain records in incompatible formats. No live view exists.
+            </div>
+            <div class="acc-col after">
+              <span class="acc-col-label">With BiasOps</span>
+              Portfolio-level visibility: which policies apply to which models, current status across every AI system, where the gaps are, <strong>what changed and when.</strong> A live, continuous view. Not a quarterly report.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item" id="a4">
+        <div class="accordion-header" onclick="toggleAcc('a4')">
+          <span class="accordion-num">04</span>
+          <div class="accordion-title-block">
+            <div class="accordion-title">Lineage Layer</div>
+            <div class="accordion-sub">audit.provenance · full-trace · timestamped · regulator-ready</div>
+          </div>
+          <div class="accordion-tags">
+            <span class="accordion-tag">Audit Trail</span>
+            <span class="accordion-tag">Provenance</span>
+          </div>
+          <span class="accordion-chevron">⌄</span>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-content">
+            <div class="acc-col before">
+              <span class="acc-col-label">The current state</span>
+              Auditor arrives. Five teams spend weeks assembling history from incompatible systems. The story is incomplete. The evidence is a multi-week project with no guarantee of completeness.
+            </div>
+            <div class="acc-col after">
+              <span class="acc-col-label">With BiasOps</span>
+              Every policy decision, enforcement event, threshold change, and model version, all linked, timestamped, and traceable. Full provenance from the regulation to the specific model run. <strong>When the auditor arrives, you run a query. Not a project.</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- YAML EXAMPLE -->
+  <h2>What a policy looks like in code</h2>
+  <p class="body">
+    This is an EU AI Act technical robustness policy, one of the checks that ships in the GPAI compliance pack. It lives in your repo, gets reviewed in pull requests, and runs automatically on every model deployment.
+  </p>
+
+  <div class="yaml-block fade">
+    <div class="yaml-header">
+      <div class="dots">
+        <span style="background:#FF5F57"></span>
+        <span style="background:#A1A1AA"></span>
+        <span style="background:#28C840"></span>
+      </div>
+      <span class="filename">policies/eu-ai-act/gpai-technical-robustness.yaml</span>
+    </div>
+    <pre>
+<span class="yaml-comment"># EU AI Act · Article 15 · Technical Robustness and Safety</span>
+<span class="yaml-key">- check_id:</span>     <span class="yaml-val">"gpai_robustness_accuracy"</span>
+  <span class="yaml-key">name:</span>         <span class="yaml-val">"GPAI Technical Robustness — Accuracy Under Distribution Shift"</span>
+  <span class="yaml-key">regulation:</span>   <span class="yaml-val">"EU AI Act / Article 15(1)"</span>
+  <span class="yaml-key">metric:</span>       <span class="yaml-val">"accuracy_degradation_ratio"</span>
+  <span class="yaml-key">threshold:</span>    <span class="yaml-num">0.95</span>
+  <span class="yaml-key">operator:</span>     <span class="yaml-val">">="</span>
+  <span class="yaml-key">evaluated_at:</span>
+    <span class="yaml-val">- "training"</span>
+    <span class="yaml-val">- "deployment"</span>
+    <span class="yaml-val">- "production_monitoring"</span>   <span class="yaml-comment"># continuous</span>
+  <span class="yaml-key">severity:</span>     <span class="yaml-val">"critical"</span>
+  <span class="yaml-key">on_fail:</span>      <span class="yaml-val">"block_deployment"</span>
+  <span class="yaml-key">evidence_required:</span>
+    <span class="yaml-val">- "robustness_benchmark_report"</span>
+    <span class="yaml-val">- "distribution_shift_analysis"</span>
+    <span class="yaml-val">- "drift_monitoring_config"</span>
+  <span class="yaml-key">remediation:</span>  <span class="yaml-val">"Re-evaluate model under shifted distribution. Update monitoring thresholds."</span></pre>
+  </div>
+
+  <!-- WHO THIS IS FOR -->
+  <h2>Who this is for</h2>
+  <p class="body">
+    We are not building for organizations that want to check a box faster. We are building for the people the risk actually lands on.
+  </p>
+
+  <div class="buyer-grid fade">
+
+    <div class="buyer-card primary">
+      <div class="buyer-label">Primary buyer</div>
+      <div class="buyer-title">Chief Compliance Officers & Chief Risk Officers</div>
+      <div class="buyer-desc">
+        You are accountable for AI outcomes across your organization, but you have no system that gives you continuous visibility into whether those outcomes stay within the bounds you approved. BiasOps is that system. You own the policies. The infrastructure enforces them, monitors them, and generates the evidence your role requires, without you needing to own the engineering stack that produces it.
+      </div>
+    </div>
+
+    <div class="buyer-card">
+      <div class="buyer-label">Financial Services</div>
+      <div class="buyer-title">Model Risk Management Teams</div>
+      <div class="buyer-desc">Your SR 11-7 compliance runs on spreadsheets and manual validation cycles built for a world where models changed slowly. AI systems change continuously. BiasOps makes model risk governance systematic, continuous, and audit-ready without replacing your existing MRM framework.</div>
+    </div>
+
+    <div class="buyer-card">
+      <div class="buyer-label">AI Leadership</div>
+      <div class="buyer-title">Chief AI Officers & VPs of AI</div>
+      <div class="buyer-desc">Every compliance gate that slows a model delays value. Every ungoverned model that ships creates compounding liability. BiasOps resolves that tension. Governance becomes a property of the deployment process, not a review stage before it.</div>
+    </div>
+
+    <div class="buyer-card">
+      <div class="buyer-label">Assurance</div>
+      <div class="buyer-title">Legal & Audit Teams</div>
+      <div class="buyer-desc">Your team assembles compliance evidence manually, under deadline, from teams who share no common format. BiasOps generates that evidence as a byproduct of normal operations: structured, timestamped, and traceable from the moment a model is trained.</div>
+    </div>
+
+  </div>
+
+  <!-- FOUNDER -->
+  <h2>Why we are the team to build this</h2>
+
+  <div class="founder-card fade">
+    <div class="label">Founder's perspective</div>
+    <blockquote>"I had to wear multiple hats because this infrastructure didn't exist."</blockquote>
+    <p>
+      Nine years inside regulated enterprises. Every time a regulation changed, I was the one finding the affected models. Every time a compliance team needed a status update, I was the one assembling it. Every time an audit arrived, I was the one producing the evidence. Not because that was my role. Because no system did it.
+    </p>
+    <p style="color:#C4CCD8;font-weight:600;font-size:15px">
+      BiasOps is that infrastructure. We are not building from theory. We are building from the gap we lived in.
+    </p>
+  </div>
+
+  <!-- THE BOTTOM LINE -->
+  <h2>The bottom line</h2>
+  <p class="body">
+    Compliance has always been designed as a checkpoint at the end of the build process. Every governance tool built so far has accepted that premise and optimized around it: faster audits, cheaper questionnaires, better documentation workflows. BiasOps rejects the premise.
+  </p>
+  <p class="body">
+    When compliance is innate, encoded as policy in the same artifacts engineers work with and enforced at every stage of the ML lifecycle, it stops being a gate you pass through and starts being a property of the system itself. The compliance team's intent and the engineering team's implementation become the same artifact. When one changes, the other changes with it. The circles stop. The overhead drops. The accountability gap closes.
+  </p>
+  <p class="body">
+    That is not a patch after deployment. That is compliance as architecture.
+  </p>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>Ready to build AI you can stand behind?</h2>
+    <p>Design partners welcome. We work closely with regulated enterprises to embed compliance in the pipeline from day one.</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+      <a href="/contact.html" class="btn-primary">Book a Demo →</a>
+      <a href="https://github.com/sksvineeth/biasops-policy-marketplace" target="_blank" rel="noopener noreferrer" class="btn-ghost">View Policy Marketplace</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 BiasOps · Apache 2.0 Licensed</p>
+</footer>
+
+<script>
+// ── ACCORDION
+function toggleAcc(id) {
+  const el = document.getElementById(id);
+  const isOpen = el.classList.contains('open');
+  document.querySelectorAll('.accordion-item').forEach(a => a.classList.remove('open'));
+  if (!isOpen) el.classList.add('open');
+}
+// open first on load
+setTimeout(() => document.getElementById('a1').classList.add('open'), 300);
+
+// ── SCROLL REVEAL
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.fade').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
